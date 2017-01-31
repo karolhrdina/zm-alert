@@ -1,0 +1,1 @@
+# fty-alert-flexible
