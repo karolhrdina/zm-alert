@@ -1,0 +1,31 @@
+<project
+    name = "fty-alert-flexible"
+    description = "agent for creating evaluating alerts"
+    script = "zproject.gsl"
+    >
+
+    <include filename = "license.xml" />
+    <version major = "0" minor = "1" patch = "0" />
+
+    <use project = "czmq" min_major = "3" />
+    <use project = "malamute" min_major = "1" />
+
+    <use project = "ftyproto" libname = "libfty_proto" prefix="fty_proto"
+        min_major = "0" min_minor = "0" min_patch = "0"
+        test = "fty_proto_test">
+        <use project = "malamute"/>
+    </use>
+
+    <use project = "lua" libname = "lua" prefix="lua"
+         min_major = "5" min_minor = "1" mit_patch = "0"
+         repository = "https://github.com/lua/lua"
+         includename = "lua" debian_name="liblua5.1-0-dev"
+         test = "lua_close" />
+
+    <class name = "rule" private = "1">class representing one rule</class>
+    <class name = "vsjson" private = "1">JSON parser</class>
+    <class name = "metrics" private = "1">List of metrics</class>
+    <class name = "flexible alert" state = "stable">Main class for evaluating alerts</class>
+
+    <main name = "fty-alert-flexible" service = "1" />
+</project>
