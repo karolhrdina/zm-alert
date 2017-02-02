@@ -28,22 +28,38 @@
 
 #include "fty_alert_flexible_classes.h"
 
+static const char *ACTOR_NAME = "fty-alert-flexible";
+static const char *ENDPOINT = "ipc://@/malamute";
+static const char *RULES_DIR = "./rules";
+
 int main (int argc, char *argv [])
 {
     bool verbose = false;
     int argn;
     for (argn = 1; argn < argc; argn++) {
+        const char *param = NULL;
+        if (argn < argc - 1) param = argv [argn+1];
+        
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
             puts ("fty-alert-flexible [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --help / -h            this information");
+            puts ("  --endpoint / -e        malamute endpoint [ipc://@/malamute]");
+            puts ("  --rules / -r           directory with rules [./rules]");
             return 0;
         }
-        else
-        if (streq (argv [argn], "--verbose")
-        ||  streq (argv [argn], "-v"))
+        else if (streq (argv [argn], "--verbose") || streq (argv [argn], "-v")) {
             verbose = true;
+        }
+        else if (streq (argv [argn], "--endpoint") || streq (argv [argn], "-e")) {
+            if (param) ENDPOINT = param;
+            ++argn;
+        }
+        else if (streq (argv [argn], "--rules") || streq (argv [argn], "-r")) {
+            if (param) RULES_DIR = param;
+            ++argn;
+        }
         else {
             printf ("Unknown option: %s\n", argv [argn]);
             return 1;
@@ -51,6 +67,20 @@ int main (int argc, char *argv [])
     }
     //  Insert main code here
     if (verbose)
-        zsys_info ("fty_alert_flexible - ");
+        zsys_info ("fty_alert_flexible - started");
+    zactor_t *server = zactor_new (flexible_alert_actor, NULL);
+    assert (server);
+    zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
+    zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_ALERTS_SYS, NULL);
+    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_METRICS, ".*", NULL);
+    zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
+    while (!zsys_interrupted) {
+        zmsg_t *msg = zactor_recv (server);
+        zmsg_destroy (&msg);
+    }
+    zactor_destroy (&server);
+    if (verbose)
+        zsys_info ("fty_alert_flexible - exited");
+
     return 0;
 }

@@ -35,6 +35,13 @@ struct _flexible_alert_t {
     mlm_client_t *mlm;
 };
 
+static void rule_freefn (void *rule)
+{
+    if (rule) {
+        rule_t *self = (rule_t *) rule;
+        rule_destroy (&self);
+    }
+}
 
 //  --------------------------------------------------------------------------
 //  Create a new flexible_alert
@@ -49,7 +56,6 @@ flexible_alert_new (void)
     self->mlm = mlm_client_new ();
     return self;
 }
-
 
 //  --------------------------------------------------------------------------
 //  Destroy the flexible_alert
@@ -68,6 +74,40 @@ flexible_alert_destroy (flexible_alert_t **self_p)
         *self_p = NULL;
     }
 }
+
+//  --------------------------------------------------------------------------
+//  Load all rules in directory. Rule MUST have ".rule" extension.
+
+void
+flexible_alert_load_rules (flexible_alert_t *self, const char *path)
+{
+    if (!self || !path) return;
+    char fullpath [PATH_MAX];
+    
+    DIR *dir = opendir(path);
+    if (!dir) return;
+
+    struct dirent * entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG) {
+            // file or link
+            int l = strlen (entry -> d_name);
+            if ( l > 5 && streq (&(entry -> d_name[l - 6]), ".rule")) {
+                // json file
+                rule_t *rule = rule_new();
+                snprintf (fullpath, PATH_MAX, "%s/%s", path, entry -> d_name);
+                if (rule_load (rule, fullpath) == 0) {
+                    zhash_update (self->rules, rule_name (rule), rule);
+                    zhash_freefn (self->rules, rule_name (rule), rule_freefn);
+                } else {
+                    rule_destroy (&rule);
+                }
+            }
+        }
+    }
+    closedir(dir);
+}
+
 
 //  --------------------------------------------------------------------------
 //  Actor running one instance of flexible alert class
@@ -113,6 +153,13 @@ flexible_alert_actor (zsock_t *pipe, void *args)
                     zstr_free (&stream);
                     zstr_free (&pattern);
                 }
+                else if (streq (cmd, "LOADRULES")) {
+                    char *dir = zmsg_popstr (msg);
+                    assert (dir);
+                    flexible_alert_load_rules (self, dir);
+                    zstr_free (&dir);
+                }
+
 
                 zstr_free (&cmd);
             }
@@ -154,6 +201,7 @@ flexible_alert_test (bool verbose)
     zstr_sendx (fs, "BIND", endpoint, "me", NULL);
     zstr_sendx (fs, "PRODUCER", FTY_PROTO_STREAM_ALERTS, NULL);
     zstr_sendx (fs, "CONSUMER", FTY_PROTO_STREAM_METRICS, ".*", NULL);
+    zstr_sendx (fs, "LOADRULES", "./rules", NULL);
 
     // destroy actor
     zactor_destroy (&fs);

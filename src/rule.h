@@ -49,6 +49,10 @@ FTY_ALERT_FLEXIBLE_PRIVATE void
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_parse (rule_t *self, const char *json);
 
+// get rule name
+FTY_ALERT_FLEXIBLE_PRIVATE const char *
+    rule_name (rule_t *self);
+
 //  Load json rule from file
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);

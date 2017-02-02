@@ -107,6 +107,15 @@ int rule_parse (rule_t *self, const char *json)
 }
 
 //  --------------------------------------------------------------------------
+//  Parse JSON into rule.
+
+const char *rule_name (rule_t *self)
+{
+    if (self) return self->name;
+    return NULL;
+}
+
+//  --------------------------------------------------------------------------
 //  Load json rule from file
 
 int rule_load (rule_t *self, const char *path)
