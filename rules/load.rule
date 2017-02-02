@@ -1,0 +1,22 @@
+{
+    "name"          : "load",
+    "description"   : "Device load",
+    "metrics"       : ["load.default"],
+    "assets"        : ["UPS1"],
+    "groups"        : [ ],
+    "results"       :  {
+        "high_critical"  : { "action" : ["EMAIL","SMS"] },
+        "high_warning"  : { "action" : ["EMAIL"] }
+    },
+    "evaluation"    : "
+         function main(load)
+             if load > 90 then
+                 return HIGH_CRITICAL, NAME .. ' is overloaded (' .. load .. '%);
+             end
+             if load > 70 then
+                 return HIGH_WARNING, NAME .. ' is overloaded (' .. load .. '%);
+             end
+             return OK, 'Load on ' .. NAME ..  ' is within limit (' .. load .. '%)';
+         end
+    "
+}
