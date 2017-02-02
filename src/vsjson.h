@@ -1,50 +1,61 @@
-/*  =========================================================================
-    vsjson - JSON parser
+/*
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <tomas@halman.net> wrote this file.  As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return.   Tomas Halman
+ * ----------------------------------------------------------------------------
+ * this source can be found at https://github.com/thalman/vsjson
+ */
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
-    =========================================================================
-*/
-
-#ifndef VSJSON_H_INCLUDED
-#define VSJSON_H_INCLUDED
+#ifndef __VSJSON_H
+#define __VSJSON_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define VSJSON_SEPARATOR '/'
+
 typedef struct _vsjson_t vsjson_t;
+typedef int (vsjson_callback_t)(const char *locator, const char *value, void *data);
 
-//  @interface
-//  Create a new vsjson
-FTY_ALERT_FLEXIBLE_PRIVATE vsjson_t *
-    vsjson_new (void);
+// minimalized json parser class
+// returns new parser object
+// parameter is json string
+// call vsjson_destroy to free the parser
+vsjson_t *vsjson_new (const char *json);
 
-//  Destroy the vsjson
-FTY_ALERT_FLEXIBLE_PRIVATE void
-    vsjson_destroy (vsjson_t **self_p);
+// destructor of json parser
+void vsjson_destroy (vsjson_t **self_p);
 
-//  Self test of this class
-FTY_ALERT_FLEXIBLE_PRIVATE void
-    vsjson_test (bool verbose);
+// get first json token, usually "[" or "{"
+// tokens are [ ] { } , : string (quote included)
+// number or keyword like null
+const char* vsjson_first_token (vsjson_t *self);
 
-//  @end
+// get next json token
+// walk trough json like this:
+//     vsjson *parser = vsjson_new (jsonString);
+//     const char *token = vsjson_first_token (parser);
+//     while (token) {
+//        printf ("%s ", token);
+//        token = vsjson_next_token (parser);
+//     }
+//     printf ("\n");
+//     vsjson_destroy (&parser);
+const char* vsjson_next_token (vsjson_t *self);
+
+int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data);
+
+int vsjson_parse (const char *json, vsjson_callback_t *func, void *data);
+
+char *vsjson_decode_string (const char *string);
+
+char *vsjson_encode_string (const char *string);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif // __VSJSON_H
