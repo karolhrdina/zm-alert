@@ -41,6 +41,18 @@ FTY_ALERT_FLEXIBLE_PRIVATE void
 FTY_ALERT_FLEXIBLE_PRIVATE void
     rule_test (bool verbose);
 
+//  Self test of this class
+FTY_ALERT_FLEXIBLE_PRIVATE void
+    vsjson_test (bool verbose);
+
+//  Parse json rule from string
+FTY_ALERT_FLEXIBLE_PRIVATE int
+    rule_parse (rule_t *self, const char *json);
+
+//  Load json rule from file
+FTY_ALERT_FLEXIBLE_PRIVATE int
+    rule_load (rule_t *self, const char *path);
+
 //  @end
 
 #ifdef __cplusplus
