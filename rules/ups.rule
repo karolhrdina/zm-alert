@@ -1,6 +1,6 @@
 {
     "name"          : "ups",
-    "description"   : "detailed utf8 description"
+    "description"   : "detailed utf8 description",
     "metrics"       : ["status.ups"],
     "assets"        : [ ],
     "groups"        : ["all-upses"],

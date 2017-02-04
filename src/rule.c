@@ -42,6 +42,12 @@ struct _rule_t {
 };
 
 
+static
+int string_comparefn (void *i1, void *i2)
+{
+    return strcmp ((char *)i1, (char *)i2);
+}
+
 //  --------------------------------------------------------------------------
 //  Create a new rule
 
@@ -53,10 +59,13 @@ rule_new (void)
     //  Initialize class properties here
     self -> metrics = zlist_new ();
     zlist_autofree (self -> metrics);
+    zlist_comparefn (self -> metrics, string_comparefn);
     self -> assets = zlist_new ();
     zlist_autofree (self -> assets);
+    zlist_comparefn (self -> assets, string_comparefn);
     self -> groups = zlist_new ();
     zlist_autofree (self -> groups);
+    zlist_comparefn (self -> groups, string_comparefn);
     return self;
 }
 
@@ -69,7 +78,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
     if (!data) return 1;
     
     rule_t *self = (rule_t *) data;
-    
+
     if (streq (locator, "name")) {
         self -> name = vsjson_decode_string (value);
     }
@@ -107,11 +116,23 @@ int rule_parse (rule_t *self, const char *json)
 }
 
 //  --------------------------------------------------------------------------
-//  Parse JSON into rule.
+//  Rule getters
 
 const char *rule_name (rule_t *self)
 {
     if (self) return self->name;
+    return NULL;
+}
+
+zlist_t *rule_assets (rule_t *self)
+{
+    if (self) return self->assets;
+    return NULL;
+}
+
+zlist_t *rule_groups (rule_t *self)
+{
+    if (self) return self->groups;
     return NULL;
 }
 
