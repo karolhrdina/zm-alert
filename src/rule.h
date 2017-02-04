@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+#define RULE_ERROR -10
+
 typedef struct _rule_t rule_t;
 
 //  @interface
@@ -68,6 +70,10 @@ FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
 //  Load json rule from file
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);
+
+// evaluate rule
+FTY_ALERT_FLEXIBLE_PRIVATE void
+    rule_evaluate (rule_t *self, zlist_t *params, int *result, char **message);
 
 //  @end
 

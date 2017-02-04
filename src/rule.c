@@ -28,6 +28,10 @@
 
 #include "fty_alert_flexible_classes.h"
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 //  Structure of our class
 
 struct _rule_t {
@@ -163,6 +167,84 @@ int rule_load (rule_t *self, const char *path)
     int result = rule_parse (self, buffer);
     free (buffer);
     return result;
+}
+
+static int rule_compile (rule_t *self)
+{
+    if (!self) return 0;
+    // destroy old context
+    if (self -> lua) {
+        lua_close (self->lua);
+        self->lua = NULL;
+    }
+    // compile
+#if LUA_VERSION_NUM > 501
+    self -> lua = luaL_newstate();
+#else
+    self -> lua = lua_open();
+#endif
+    if (!self->lua) return 0;
+    luaL_openlibs(self -> lua); // get functions like print();
+    if (luaL_dostring (self -> lua, self -> evaluation) != 0) {
+        zsys_error ("rule %s has an error", self -> name);
+        lua_close (self -> lua);
+        self -> lua = NULL;
+        return 0;
+    }
+    lua_getglobal (self -> lua, "main");
+    if (!lua_isfunction (self -> lua, -1)) {
+        zsys_error ("main function not found in rule %s", self -> name);
+        lua_close (self->lua);
+        self -> lua = NULL;
+        return 0;
+    }
+    lua_pushnumber(self -> lua, 0);
+    lua_setglobal(self -> lua, "OK");
+    lua_pushnumber(self -> lua, 1);
+    lua_setglobal(self -> lua, "WARNING");
+    lua_pushnumber(self -> lua, 1);
+    lua_setglobal(self -> lua, "HIGH_WARNING");
+    lua_pushnumber(self -> lua, 2);
+    lua_setglobal(self -> lua, "CRITICAL");
+    lua_pushnumber(self -> lua, 2);
+    lua_setglobal(self -> lua, "HIGH_CRITICAL");
+    lua_pushnumber(self -> lua, -1);
+    lua_setglobal(self -> lua, "LOW_WARNING");
+    lua_pushnumber(self -> lua, -2);
+    lua_setglobal(self -> lua, "LOW_CRITICAL");
+    return 1;
+}    
+
+void rule_evaluate (rule_t *self, zlist_t *params, int *result, char **message)
+{
+    if (!self || !params || !result || !message) return;
+    
+    *result = RULE_ERROR;
+    *message = NULL;
+    if (!self -> lua) {
+        if (! rule_compile (self)) return;
+    }
+    lua_settop (self->lua, 0);
+    lua_getglobal (self->lua, "main");
+    char *value = (char *) zlist_first (params);
+    while (value) {
+        lua_pushstring (self -> lua, value);
+        value = (char *) zlist_next (params);
+    }
+    if (lua_pcall(self -> lua, zlist_size (params), 2, 0) == 0) {
+        // calculated
+        if (lua_isnumber (self -> lua, -1)) {
+            *result = lua_tointeger(self -> lua, -1);
+            const char *msg = lua_tostring (self->lua, -2);
+            if (msg) *message = strdup (msg);
+        }
+        else if (lua_isnumber (self -> lua, -2)) {
+            *result = lua_tointeger(self -> lua, -2);
+            const char *msg = lua_tostring (self->lua, -1);
+            if (msg) *message = strdup (msg);
+        }
+        lua_pop (self->lua, 2);
+    }
 }
 
 //  --------------------------------------------------------------------------
