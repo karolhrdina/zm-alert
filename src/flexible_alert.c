@@ -33,6 +33,7 @@
 struct _flexible_alert_t {
     zhash_t *rules;
     zhash_t *assets;
+    zhash_t *metrics;
     mlm_client_t *mlm;
 };
 
@@ -52,6 +53,13 @@ static void asset_freefn (void *asset)
     }
 }
 
+void ftymsg_freefn (void *ptr)
+{
+    if (!ptr) return;
+    fty_proto_t *fty = (fty_proto_t *)ptr;
+    fty_proto_destroy (&fty);
+}
+
 //  --------------------------------------------------------------------------
 //  Create a new flexible_alert
 
@@ -63,6 +71,7 @@ flexible_alert_new (void)
     //  Initialize class properties here
     self->rules = zhash_new ();
     self->assets = zhash_new ();
+    self->metrics = zhash_new ();
     self->mlm = mlm_client_new ();
     return self;
 }
@@ -79,6 +88,7 @@ flexible_alert_destroy (flexible_alert_t **self_p)
         //  Free class properties here
         zhash_destroy (&self->rules);
         zhash_destroy (&self->assets);
+        zhash_destroy (&self->metrics);
         mlm_client_destroy (&self->mlm);
         //  Free object itself
         free (self);
@@ -121,12 +131,57 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
     closedir(dir);
 }
 
+
+void
+flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *assetname)
+{
+    // TODO: evaluate, send alert
+}
+//  --------------------------------------------------------------------------
+//  Function handles infoming metrics, drives lua evaluation
+
+void
+flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
+{
+    if (!self || !ftymsg_p || !*ftymsg_p) return;
+    fty_proto_t *ftymsg = *ftymsg_p;
+    if (fty_proto_id (ftymsg) != FTY_PROTO_METRIC) return;
+
+    const char *assetname = fty_proto_element_src (ftymsg);
+    const char *quantity = fty_proto_type (ftymsg);
+    
+    zlist_t *functions_for_asset = (zlist_t *) zhash_lookup (self->assets, assetname);
+    if (! functions_for_asset) return;
+
+    // this asset has some evaluation functions
+    char *func = (char *) zlist_first (functions_for_asset);
+    bool metric_saved =  false;
+    while (func) {
+        rule_t *rule = (rule_t *) zhash_lookup (self -> rules, func);
+        if (zlist_exists (rule_metrics (rule), (char *)quantity)) {
+            // we have to evaluate this function for our asset
+            // save metric into cache
+            if (! metric_saved) {
+                char *topic;
+                asprintf (&topic, "%s@%s", quantity, assetname);
+                zhash_update (self->metrics, topic, ftymsg);
+                zhash_freefn (self->metrics, topic, ftymsg_freefn);
+                *ftymsg_p = NULL;
+                zstr_free (&topic);
+                metric_saved = true;
+            }
+            // evaluate
+            flexible_alert_evaluate (self, rule, assetname);
+        }
+        func = (char *) zlist_next (functions_for_asset);
+    }
+}
+
 //  --------------------------------------------------------------------------
 //  Function returns true if function should be evaluated for particular asset.
 //  This is decided by asset name (json "assets": []) or group (json "groups":[])
 
-
-int
+static int
 is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
 {
     if (!rule || !ftymsg) return 0;
@@ -160,8 +215,8 @@ void
 flexible_alert_handle_asset (flexible_alert_t *self, fty_proto_t *ftymsg)
 {
     if (!self || !ftymsg) return;
+    if (fty_proto_id (ftymsg) != FTY_PROTO_ASSET) return;
 
-    fty_proto_print (ftymsg);
     const char *operation = fty_proto_operation (ftymsg);
     const char *assetname = fty_proto_name (ftymsg);
     
@@ -256,6 +311,9 @@ flexible_alert_actor (zsock_t *pipe, void *args)
                 fty_proto_t *fmsg = fty_proto_decode (&msg);
                 if (fty_proto_id (fmsg) == FTY_PROTO_ASSET) {
                     flexible_alert_handle_asset (self, fmsg);
+                }
+                if (fty_proto_id (fmsg) == FTY_PROTO_METRIC) {
+                    flexible_alert_handle_metric (self, &fmsg);
                 }
                 fty_proto_destroy (&fmsg);
             }

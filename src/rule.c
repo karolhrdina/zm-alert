@@ -136,6 +136,12 @@ zlist_t *rule_groups (rule_t *self)
     return NULL;
 }
 
+zlist_t *rule_metrics (rule_t *self)
+{
+    if (self) return self->metrics;
+    return NULL;
+}
+
 //  --------------------------------------------------------------------------
 //  Load json rule from file
 
