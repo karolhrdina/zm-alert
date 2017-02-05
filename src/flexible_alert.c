@@ -203,6 +203,25 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     if (result != RULE_ERROR);
     flexible_alert_send_alert (self, rule, assetname, result, message, 120);
     zstr_free (&message);
+    zlist_destroy (&params);
+}
+
+//  --------------------------------------------------------------------------
+//  drop expired metrics
+
+void
+flexible_alert_clean_metrics (flexible_alert_t *self)
+{
+    zlist_t *topics = zhash_keys (self->metrics);
+    char *topic = (char *) zlist_first (topics);
+    while (topic) {
+        fty_proto_t *ftymsg = (fty_proto_t *) zhash_lookup (self->metrics, topic);
+        if (fty_proto_time (ftymsg) + fty_proto_ttl (ftymsg) < time (NULL)) {
+            zhash_delete (self->metrics, topic);
+        }
+        topic = (char *) zlist_next (topics);
+    }
+    zlist_destroy (&topics);
 }
 
 //  --------------------------------------------------------------------------
@@ -214,7 +233,9 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     if (!self || !ftymsg_p || !*ftymsg_p) return;
     fty_proto_t *ftymsg = *ftymsg_p;
     if (fty_proto_id (ftymsg) != FTY_PROTO_METRIC) return;
-
+    
+    flexible_alert_clean_metrics (self);
+    
     const char *assetname = fty_proto_element_src (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
     
@@ -230,6 +251,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             // we have to evaluate this function for our asset
             // save metric into cache
             if (! metric_saved) {
+                fty_proto_set_time (ftymsg, time (NULL));
                 char *topic;
                 asprintf (&topic, "%s@%s", quantity, assetname);
                 zhash_update (self->metrics, topic, ftymsg);
@@ -428,9 +450,13 @@ flexible_alert_test (bool verbose)
     mlm_client_set_producer (asset, FTY_PROTO_STREAM_ASSETS);
     mlm_client_set_consumer (asset, FTY_PROTO_STREAM_ALERTS_SYS, ".*");
 
+    // metric client
+    mlm_client_t *metric = mlm_client_new ();
+    mlm_client_connect (metric, endpoint, 5000, "metric");
+    mlm_client_set_producer (metric, FTY_PROTO_STREAM_METRICS);
+    
     // let malamute establish everything
-    zclock_sleep (500);
-
+    zclock_sleep (200);
     {
         zhash_t *ext = zhash_new();
         zhash_autofree (ext);
@@ -445,7 +471,27 @@ flexible_alert_test (bool verbose)
         zhash_destroy (&ext);
         zmsg_destroy (&assetmsg);
     }
-    zclock_sleep (500);
+    zclock_sleep (200);
+    {
+        // send metric, receive alert
+        zmsg_t *msg = fty_proto_encode_metric (
+            NULL,
+            "status.ups",
+            "mydevice",
+            "0",
+            "",
+            60);
+        mlm_client_send (metric, "status.ups@mydevice", &msg);
+
+        zmsg_t *alert = mlm_client_recv (asset);
+        assert (is_fty_proto (alert));
+        fty_proto_t *ftymsg = fty_proto_decode (&alert);
+        fty_proto_print (ftymsg);
+        fty_proto_destroy (&ftymsg);
+        zmsg_destroy (&alert);
+    }
+    zclock_sleep (200);
+    mlm_client_destroy (&metric);
     mlm_client_destroy (&asset);
     // destroy actor
     zactor_destroy (&fs);
