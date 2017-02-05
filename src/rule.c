@@ -215,15 +215,17 @@ static int rule_compile (rule_t *self)
     return 1;
 }    
 
-void rule_evaluate (rule_t *self, zlist_t *params, int *result, char **message)
+void rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message)
 {
-    if (!self || !params || !result || !message) return;
+    if (!self || !params || !name || !result || !message) return;
     
     *result = RULE_ERROR;
     *message = NULL;
     if (!self -> lua) {
         if (! rule_compile (self)) return;
     }
+    lua_pushstring(self -> lua, name);
+    lua_setglobal(self -> lua, "NAME");
     lua_settop (self->lua, 0);
     lua_getglobal (self->lua, "main");
     char *value = (char *) zlist_first (params);

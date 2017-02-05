@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#define RULE_ERROR -10
+#define RULE_ERROR 255
 
 typedef struct _rule_t rule_t;
 
@@ -73,7 +73,7 @@ FTY_ALERT_FLEXIBLE_PRIVATE int
 
 // evaluate rule
 FTY_ALERT_FLEXIBLE_PRIVATE void
-    rule_evaluate (rule_t *self, zlist_t *params, int *result, char **message);
+    rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message);
 
 //  @end
 

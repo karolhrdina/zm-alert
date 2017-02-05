@@ -131,12 +131,80 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
     closedir(dir);
 }
 
+void
+flexible_alert_send_alert (flexible_alert_t *self, rule_t *rule, const char *asset, int result, const char *message, int ttl)
+{
+    char *severity = "OK";
+    if (result == -1 || result == 1) severity = "WARNING";
+    if (result == -2 || result == 2) severity = "CRITICAL";
+
+    // topic
+    char *topic;
+    asprintf (&topic, "%s/%s@%s", rule_name (rule), severity, asset);
+
+    // TTL
+    char *ttls;
+    asprintf (&ttls, "%i", ttl);
+    zhash_t *aux = zhash_new();
+    zhash_autofree (aux);
+    zhash_insert (aux, "TTL", ttls);
+    zstr_free (&ttls);
+    
+    // message
+    zmsg_t *alert = fty_proto_encode_alert (
+        aux,
+        rule_name (rule),
+        asset,
+        result == 0 ? "RESOLVED" : "ACTIVE",
+        severity,
+        message,
+        time(NULL),
+        ""); // action list
+    
+    mlm_client_send (self -> mlm, topic, &alert);
+
+    zhash_destroy (&aux);
+    zstr_free (&topic);
+    zmsg_destroy (&alert);
+}
+
 
 void
 flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *assetname)
 {
-    // TODO: evaluate, send alert
+    zlist_t *params = zlist_new ();
+    zlist_autofree (params);
+    
+    // prepare lua function parameters
+    zlist_t *rule_param_list = rule_metrics (rule);
+    char *param = (char *) zlist_first (rule_param_list);
+    while (param) {
+        char *topic;
+        asprintf (&topic, "%s@%s", param, assetname);
+        fty_proto_t *ftymsg = (fty_proto_t *) zhash_lookup (self->metrics, topic);
+        if (!ftymsg) {
+            // some metrics are missing
+            zlist_destroy (&params);
+            zstr_free (&topic);
+            zsys_debug ("missing metric %s", topic);
+            return;
+        }
+        // TODO: get ttl from metric
+        zstr_free (&topic);
+        zlist_append (params, (char *) fty_proto_value (ftymsg));
+        param = (char *) zlist_next (rule_param_list);
+    }
+
+    // call the lua function
+    char *message;
+    int result;
+
+    rule_evaluate (rule, params, assetname, &result, &message);
+    if (result != RULE_ERROR);
+    flexible_alert_send_alert (self, rule, assetname, result, message, 120);
+    zstr_free (&message);
 }
+
 //  --------------------------------------------------------------------------
 //  Function handles infoming metrics, drives lua evaluation
 
