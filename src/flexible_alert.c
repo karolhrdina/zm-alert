@@ -233,8 +233,10 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     if (!self || !ftymsg_p || !*ftymsg_p) return;
     fty_proto_t *ftymsg = *ftymsg_p;
     if (fty_proto_id (ftymsg) != FTY_PROTO_METRIC) return;
-    
-    flexible_alert_clean_metrics (self);
+
+    if (zhash_lookup (mlm->metric, mlm_client_topic (self->mlm))) {
+        flexible_alert_clean_metrics (self);
+    }
     
     const char *assetname = fty_proto_element_src (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
