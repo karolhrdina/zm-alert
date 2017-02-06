@@ -1,0 +1,22 @@
+{
+    "name"          : "nagios1",
+    "description"   : "concept how to get nagios plugin work",
+    "assets"        : [ ],
+    "groups"        : [ ],
+    "models"        : [ ],
+    "results"       :  {
+        "high_critical"  : { "action" : ["EMAIL","SMS"] },
+        "high_warning"  : { "action" : ["EMAIL"] }
+    },
+    "evaluation"    : "
+         function main()
+             local file = io.popen ("ping -c 2 " .. IP);
+             local out = file:read ("*a");
+             result = {file:close ()}
+             if result[1] then
+                 return OK, NAME .. ' reachable';
+             end
+             return WARNING, \"Can't ping \" .. NAME;
+         end
+    "
+}
