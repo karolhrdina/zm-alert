@@ -40,6 +40,7 @@ struct _rule_t {
     zlist_t *metrics;
     zlist_t *assets;
     zlist_t *groups;
+    zlist_t *models;
     // results are not interesting
     char *evaluation;
     lua_State *lua;
@@ -70,6 +71,9 @@ rule_new (void)
     self -> groups = zlist_new ();
     zlist_autofree (self -> groups);
     zlist_comparefn (self -> groups, string_comparefn);
+    self -> models = zlist_new ();
+    zlist_autofree (self -> models);
+    zlist_comparefn (self -> models, string_comparefn);
     return self;
 }
 
@@ -102,8 +106,12 @@ rule_json_callback (const char *locator, const char *value, void *data)
     else if (strncmp (locator, "groups/", 7) == 0) {
         char *group = vsjson_decode_string (value);
         zlist_append (self -> groups, group);
-        // zlist_freefn (self -> groups, group, free, true);
         zstr_free (&group);
+    }
+    else if (strncmp (locator, "models/", 7) == 0) {
+        char *model = vsjson_decode_string (value);
+        zlist_append (self -> models, model);
+        zstr_free (&model);
     }
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
@@ -143,6 +151,12 @@ zlist_t *rule_groups (rule_t *self)
 zlist_t *rule_metrics (rule_t *self)
 {
     if (self) return self->metrics;
+    return NULL;
+}
+
+zlist_t *rule_models (rule_t *self)
+{
+    if (self) return self->models;
     return NULL;
 }
 

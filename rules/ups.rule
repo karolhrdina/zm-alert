@@ -3,6 +3,7 @@
     "description"   : "detailed utf8 description",
     "metrics"       : ["status.ups"],
     "assets"        : [ ],
+    "models"        : [ ],
     "groups"        : ["all-upses"],
     "results"       :  {
         "high_critical"  : { "action" : ["EMAIL","SMS"] },

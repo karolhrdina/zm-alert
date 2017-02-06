@@ -4,6 +4,7 @@
     "metrics"       : ["load.default"],
     "assets"        : ["UPS1"],
     "groups"        : [ ],
+    "models"        : [ ],
     "results"       :  {
         "high_critical"  : { "action" : ["EMAIL","SMS"] },
         "high_warning"  : { "action" : ["EMAIL"] }
