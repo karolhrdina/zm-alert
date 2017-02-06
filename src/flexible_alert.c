@@ -106,13 +106,17 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
     char fullpath [PATH_MAX];
     
     DIR *dir = opendir(path);
-    if (!dir) return;
-
+    if (!dir) {
+        zsys_error ("cannot open rule dir '%s'", path);
+        return;
+    }
     struct dirent * entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG) {
+        zsys_debug ("checking dir entry %s type %i", entry -> d_name, entry -> d_type);
+        if (entry -> d_type == DT_LNK || entry -> d_type == DT_REG || entry -> d_type == 0) {
             // file or link
             int l = strlen (entry -> d_name);
+            zsys_debug ("loading rule file: %s", entry -> d_name);
             if ( l > 5 && streq (&(entry -> d_name[l - 5]), ".rule")) {
                 // json file
                 rule_t *rule = rule_new();
@@ -178,6 +182,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     // prepare lua function parameters
     zlist_t *rule_param_list = rule_metrics (rule);
     char *param = (char *) zlist_first (rule_param_list);
+    int ttl = 0;
     while (param) {
         char *topic;
         asprintf (&topic, "%s@%s", param, assetname);
@@ -189,7 +194,8 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
             zsys_debug ("missing metric %s", topic);
             return;
         }
-        // TODO: get ttl from metric
+        // TTL should be set accorning shortest ttl in metric
+        if (ttl == 0 || ttl > fty_proto_ttl (ftymsg)) ttl = fty_proto_ttl (ftymsg);
         zstr_free (&topic);
         zlist_append (params, (char *) fty_proto_value (ftymsg));
         param = (char *) zlist_next (rule_param_list);
@@ -201,7 +207,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
 
     rule_evaluate (rule, params, assetname, &result, &message);
     if (result != RULE_ERROR);
-    flexible_alert_send_alert (self, rule, assetname, result, message, 120);
+    flexible_alert_send_alert (self, rule, assetname, result, message, ttl * 5 / 2);
     zstr_free (&message);
     zlist_destroy (&params);
 }
@@ -233,8 +239,10 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     if (!self || !ftymsg_p || !*ftymsg_p) return;
     fty_proto_t *ftymsg = *ftymsg_p;
     if (fty_proto_id (ftymsg) != FTY_PROTO_METRIC) return;
-    
-    flexible_alert_clean_metrics (self);
+
+    if (zhash_lookup (self->metrics, mlm_client_subject (self->mlm))) {
+        flexible_alert_clean_metrics (self);
+    }
     
     const char *assetname = fty_proto_element_src (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
