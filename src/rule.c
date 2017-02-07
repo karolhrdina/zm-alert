@@ -280,6 +280,7 @@ rule_destroy (rule_t **self_p)
         zlist_destroy (&self->metrics);
         zlist_destroy (&self->assets);
         zlist_destroy (&self->groups);
+        zlist_destroy (&self->models);
         //  Free object itself
         free (self);
         *self_p = NULL;
