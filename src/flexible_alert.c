@@ -136,7 +136,7 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
 }
 
 void
-flexible_alert_send_alert (flexible_alert_t *self, rule_t *rule, const char *asset, int result, const char *message, int ttl)
+flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *asset, int result, const char *message, int ttl)
 {
     char *severity = "OK";
     if (result == -1 || result == 1) severity = "WARNING";
@@ -144,7 +144,7 @@ flexible_alert_send_alert (flexible_alert_t *self, rule_t *rule, const char *ass
 
     // topic
     char *topic;
-    asprintf (&topic, "%s/%s@%s", rule_name (rule), severity, asset);
+    asprintf (&topic, "%s/%s@%s", rulename, severity, asset);
 
     // TTL
     char *ttls;
@@ -157,7 +157,7 @@ flexible_alert_send_alert (flexible_alert_t *self, rule_t *rule, const char *ass
     // message
     zmsg_t *alert = fty_proto_encode_alert (
         aux,
-        rule_name (rule),
+        rulename,
         asset,
         result == 0 ? "RESOLVED" : "ACTIVE",
         severity,
@@ -207,7 +207,13 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
 
     rule_evaluate (rule, params, assetname, &result, &message);
     if (result != RULE_ERROR);
-    flexible_alert_send_alert (self, rule, assetname, result, message, ttl * 5 / 2);
+    flexible_alert_send_alert (
+        self,
+        rule_name (rule),
+        assetname,
+        result,
+        message, ttl * 5 / 2
+    );
     zstr_free (&message);
     zlist_destroy (&params);
 }
@@ -246,7 +252,23 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     
     const char *assetname = fty_proto_element_src (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
-    
+    const char *description = fty_proto_aux_string (ftymsg, "description", "");
+
+    // produce nagios style alerts
+    if (strncmp (quantity, "nagios.", 7) == 0 && strlen (description)) {
+        int ivalue = atoi (fty_proto_value (ftymsg));
+        if (ivalue >=0 && ivalue <=2) {
+            flexible_alert_send_alert (
+                self,
+                quantity,
+                fty_proto_element_src (ftymsg),
+                ivalue,
+                description,
+                fty_proto_ttl (ftymsg)
+            );
+            return;
+        }
+    }
     zlist_t *functions_for_asset = (zlist_t *) zhash_lookup (self->assets, assetname);
     if (! functions_for_asset) return;
 
