@@ -146,28 +146,20 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
     char *topic;
     asprintf (&topic, "%s/%s@%s", rulename, severity, asset);
 
-    // TTL
-    char *ttls;
-    asprintf (&ttls, "%i", ttl);
-    zhash_t *aux = zhash_new();
-    zhash_autofree (aux);
-    zhash_insert (aux, "TTL", ttls);
-    zstr_free (&ttls);
-    
     // message
     zmsg_t *alert = fty_proto_encode_alert (
-        aux,
+        NULL,
+        time(NULL),
+        ttl,
         rulename,
         asset,
         result == 0 ? "RESOLVED" : "ACTIVE",
         severity,
         message,
-        time(NULL),
         ""); // action list
     
     mlm_client_send (self -> mlm, topic, &alert);
 
-    zhash_destroy (&aux);
     zstr_free (&topic);
     zmsg_destroy (&alert);
 }
@@ -250,7 +242,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
         flexible_alert_clean_metrics (self);
     }
     
-    const char *assetname = fty_proto_element_src (ftymsg);
+    const char *assetname = fty_proto_name (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
     const char *description = fty_proto_aux_string (ftymsg, "description", "");
 
@@ -261,7 +253,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             flexible_alert_send_alert (
                 self,
                 quantity,
-                fty_proto_element_src (ftymsg),
+                fty_proto_name (ftymsg),
                 ivalue,
                 description,
                 fty_proto_ttl (ftymsg)
@@ -512,11 +504,12 @@ flexible_alert_test (bool verbose)
         // send metric, receive alert
         zmsg_t *msg = fty_proto_encode_metric (
             NULL,
+            time (NULL),
+            60,
             "status.ups",
             "mydevice",
             "0",
-            "",
-            60);
+            "");
         mlm_client_send (metric, "status.ups@mydevice", &msg);
 
         zmsg_t *alert = mlm_client_recv (asset);
