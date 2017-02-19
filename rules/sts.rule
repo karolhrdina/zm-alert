@@ -1,0 +1,24 @@
+{
+    "name"          : "load",
+    "description"   : "Device load",
+    "metrics"       : ["status.input.1.voltage", "status.input.2.voltage"],
+    "types"         : ["sts"],
+    "results"       :  {
+        "high_critical"  : { "action" : ["EMAIL", "SMS"] },
+        "high_warning"  : { "action" : ["EMAIL"] }
+    },
+    "evaluation"    : "
+         function main(i1, i2)
+             if i1 == 'good' and i2 == 'good' then
+                 return OK, 'Voltage status of both inputs of ' .. NAME .. ' is good.'
+             end
+             if i1 == 'good' then
+                 return WARNING, 'Input 2 voltage status of ' .. NAME .. ' is ' .. i2 .. '!'
+             end
+             if i2 == 'good' then
+                 return WARNING, 'Input 1 voltage status of ' .. NAME .. ' is ' .. i1 .. '!'
+             end
+             return CRITICAL, 'Voltage status of both inputs is bad (' .. i1 .. ', ' .. i2 .. ')!'
+         end
+    "
+}

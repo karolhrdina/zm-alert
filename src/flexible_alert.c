@@ -324,6 +324,11 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     model = fty_proto_ext_string (ftymsg, "device.part", NULL);
     if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
     
+    const char *type = fty_proto_aux_string (ftymsg, "type", NULL);
+    if (type && zlist_exists (rule_types (rule), (void *) type)) return 1;
+    const char *subtype = fty_proto_aux_string (ftymsg, "subtype", NULL);
+    if (subtype && zlist_exists (rule_types (rule), (void *) subtype)) return 1;
+    
     return 0;
 }
 

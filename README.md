@@ -14,6 +14,7 @@ Evaluation function is written in Lua.
     "metrics"       : ["load.default"],
     "assets"        : [],
     "models"        : [],
+    "types"         : [],
     "groups"        : ["allupses"],
     "evaluation"    : "
          function main(load)
@@ -46,6 +47,7 @@ following parts
 * assets - optional - rule will be applied to assets explicitly listed here
 * models - optional - rule will be applied to assets of listed model or
   part number (see extended attribute model and device.part)
+* types - optional - rule will be applied to asset of listed type or subtype
 * evaluation - mandatory - Lua code for producing alert.
 
 You can combine assets, groups and models in one rule.

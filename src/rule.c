@@ -41,6 +41,7 @@ struct _rule_t {
     zlist_t *assets;
     zlist_t *groups;
     zlist_t *models;
+    zlist_t *types;
     zhash_t *result_actions;
     char *evaluation;
     lua_State *lua;
@@ -74,6 +75,9 @@ rule_new (void)
     self -> models = zlist_new ();
     zlist_autofree (self -> models);
     zlist_comparefn (self -> models, string_comparefn);
+    self -> types = zlist_new ();
+    zlist_autofree (self -> types);
+    zlist_comparefn (self -> types, string_comparefn);
     self -> result_actions = zhash_new ();
     zhash_autofree (self -> result_actions);
     return self;
@@ -130,6 +134,11 @@ rule_json_callback (const char *locator, const char *value, void *data)
         char *model = vsjson_decode_string (value);
         zlist_append (self -> models, model);
         zstr_free (&model);
+    }
+    else if (strncmp (locator, "types/", 6) == 0) {
+        char *type = vsjson_decode_string (value);
+        zlist_append (self -> types, type);
+        zstr_free (&type);
     }
     else if (strncmp (locator, "results/", 8) == 0) {
         // results/[0/]low_warning/action/0
@@ -192,6 +201,12 @@ zlist_t *rule_metrics (rule_t *self)
 zlist_t *rule_models (rule_t *self)
 {
     if (self) return self->models;
+    return NULL;
+}
+
+zlist_t *rule_types (rule_t *self)
+{
+    if (self) return self->types;
     return NULL;
 }
 
@@ -348,6 +363,7 @@ rule_destroy (rule_t **self_p)
         zlist_destroy (&self->assets);
         zlist_destroy (&self->groups);
         zlist_destroy (&self->models);
+        zlist_destroy (&self->types);
         zhash_destroy (&self->result_actions);
         //  Free object itself
         free (self);
