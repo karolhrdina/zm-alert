@@ -1,6 +1,6 @@
 {
-    "name"          : "load",
-    "description"   : "Device load",
+    "name"          : "sts-voltage",
+    "description"   : "STS/ATS voltage alert",
     "metrics"       : ["status.input.1.voltage", "status.input.2.voltage"],
     "types"         : ["sts"],
     "results"       :  {
