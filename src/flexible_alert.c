@@ -143,8 +143,7 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
     if (result == -2 || result == 2) severity = "CRITICAL";
 
     // topic
-    char *topic;
-    asprintf (&topic, "%s/%s@%s", rulename, severity, asset);
+    char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity, asset);
 
     // message
     zmsg_t *alert = fty_proto_encode_alert (
@@ -176,8 +175,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     char *param = (char *) zlist_first (rule_param_list);
     int ttl = 0;
     while (param) {
-        char *topic;
-        asprintf (&topic, "%s@%s", param, assetname);
+        char *topic = zsys_sprintf ("%s@%s", param, assetname);
         fty_proto_t *ftymsg = (fty_proto_t *) zhash_lookup (self->metrics, topic);
         if (!ftymsg) {
             // some metrics are missing
@@ -276,8 +274,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             // save metric into cache
             if (! metric_saved) {
                 fty_proto_set_time (ftymsg, time (NULL));
-                char *topic;
-                asprintf (&topic, "%s@%s", quantity, assetname);
+                char *topic = zsys_sprintf ("%s@%s", quantity, assetname);
                 zhash_update (self->metrics, topic, ftymsg);
                 zhash_freefn (self->metrics, topic, ftymsg_freefn);
                 *ftymsg_p = NULL;
