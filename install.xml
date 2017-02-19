@@ -11,8 +11,8 @@ Installation model
 
 <install>
     <item type = "systemd-tmpfiles" />
-    <item path = "/var/lib/fty/fty-alert-flexible/rules" name = "../sts.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../sts.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../load.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../ups.rule" />
+    <item path = "/var/lib/fty/fty-alert-flexible/rules" name = "../rules/sts.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/load.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/ups.rule" />
 </install>
