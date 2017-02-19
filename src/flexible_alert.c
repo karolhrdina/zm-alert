@@ -136,7 +136,7 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
 }
 
 void
-flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *asset, int result, const char *message, int ttl)
+flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *actions, const char *asset, int result, const char *message, int ttl)
 {
     char *severity = "OK";
     if (result == -1 || result == 1) severity = "WARNING";
@@ -156,7 +156,7 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
         result == 0 ? "RESOLVED" : "ACTIVE",
         severity,
         message,
-        ""); // action list
+        actions); // action list
     
     mlm_client_send (self -> mlm, topic, &alert);
 
@@ -202,6 +202,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     flexible_alert_send_alert (
         self,
         rule_name (rule),
+        rule_result_actions (rule, result),
         assetname,
         result,
         message, ttl * 5 / 2
@@ -253,6 +254,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             flexible_alert_send_alert (
                 self,
                 quantity,
+                "",
                 fty_proto_name (ftymsg),
                 ivalue,
                 description,
@@ -508,7 +510,7 @@ flexible_alert_test (bool verbose)
             60,
             "status.ups",
             "mydevice",
-            "0",
+            "64",
             "");
         mlm_client_send (metric, "status.ups@mydevice", &msg);
 

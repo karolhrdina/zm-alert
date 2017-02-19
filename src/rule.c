@@ -41,7 +41,7 @@ struct _rule_t {
     zlist_t *assets;
     zlist_t *groups;
     zlist_t *models;
-    // results are not interesting
+    zhash_t *result_actions;
     char *evaluation;
     lua_State *lua;
 };
@@ -74,7 +74,25 @@ rule_new (void)
     self -> models = zlist_new ();
     zlist_autofree (self -> models);
     zlist_comparefn (self -> models, string_comparefn);
+    self -> result_actions = zhash_new ();
+    zhash_autofree (self -> result_actions);
     return self;
+}
+
+//  --------------------------------------------------------------------------
+//  Add rule result action
+void rule_add_result_action (rule_t *self, const char *result, const char *action)
+{
+    if (!self || !result || !action) return;
+    
+    char *item = (char *) zhash_lookup (self->result_actions, result);
+    if (item) {
+        char *newitem = zsys_sprintf ("%s/%s", item, action);
+        zhash_update (self -> result_actions, result, newitem);
+        zstr_free (&newitem);
+    } else {
+        zhash_update (self -> result_actions, result, (void *)action);
+    }
 }
 
 //  --------------------------------------------------------------------------
@@ -112,6 +130,23 @@ rule_json_callback (const char *locator, const char *value, void *data)
         char *model = vsjson_decode_string (value);
         zlist_append (self -> models, model);
         zstr_free (&model);
+    }
+    else if (strncmp (locator, "results/", 8) == 0) {
+        // results/[0/]low_warning/action/0
+        char *end = strstr (locator, "/action/");
+        if (end) {
+            char *start = end;
+            --start;
+            while (*start != '/') --start;
+            ++start;
+            size_t size = end - start;
+            char *key = (char *) zmalloc (size + 1);
+            strncpy (key, start, size);
+            char *action = vsjson_decode_string (value);
+            rule_add_result_action (self, key, action);
+            zstr_free (&key);
+            zstr_free (&action);
+        }
     }
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
@@ -158,6 +193,38 @@ zlist_t *rule_models (rule_t *self)
 {
     if (self) return self->models;
     return NULL;
+}
+
+const char *rule_result_actions (rule_t *self, int result)
+{
+    if (self) {
+        char *results;
+        switch (result) {
+        case -2:
+            results = "low_critical";
+            break;
+        case -1:
+            results = "low_warning";
+            break;
+        case 0:
+            results = "ok";
+            break;
+        case 1:
+            results = "high_warning";
+            break;
+        case 2:
+            results = "high_critical";
+            break;
+        default:
+            results = "";
+            break;
+        }
+        char *item = (char *) zhash_lookup (self->result_actions, results);
+        if (item) {
+            return item;
+        }
+    }
+    return "";
 }
 
 //  --------------------------------------------------------------------------
@@ -281,6 +348,7 @@ rule_destroy (rule_t **self_p)
         zlist_destroy (&self->assets);
         zlist_destroy (&self->groups);
         zlist_destroy (&self->models);
+        zhash_destroy (&self->result_actions);
         //  Free object itself
         free (self);
         *self_p = NULL;
