@@ -352,7 +352,7 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libmlm
 dnl END of enabled attempts to search for libmlm
 
 
-was_ftyproto_check_lib_detected=no
+was_fty_proto_check_lib_detected=no
 
 search_libfty_proto="yes"
 
@@ -372,7 +372,7 @@ AS_CASE([x"${with_libfty_proto}"],
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
 AS_IF([test x"${search_libfty_proto}" = xno],
-    [AC_MSG_WARN([Required dependency on ftyproto was explicitly disabled during configuration by '--with-libfty_proto=no'; subsequent full build of fty-alert-flexible may fail])])
+    [AC_MSG_WARN([Required dependency on fty_proto was explicitly disabled during configuration by '--with-libfty_proto=no'; subsequent full build of fty-alert-flexible may fail])])
 
 AS_IF([test x"${search_libfty_proto}" = xyes], [
     # Archive previously detected and supplied flags
@@ -381,55 +381,55 @@ AS_IF([test x"${search_libfty_proto}" = xyes], [
 
     found_pkgconfig=""
     found_linkname=""
-    PKG_CHECK_MODULES([ftyproto], [libfty_proto >= 0.0.0],
+    PKG_CHECK_MODULES([fty_proto], [libfty_proto >= 0.0.0],
     [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $ftyproto_LIBS"
-        was_ftyproto_check_lib_detected=pkgcfg
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_proto_LIBS"
+        was_fty_proto_check_lib_detected=pkgcfg
         found_pkgconfig="libfty_proto"
     ],
     [
         AC_MSG_NOTICE([Package libfty_proto not found; falling back to defined compilability tests])
 
-        ftyproto_synthetic_cflags=""
-        ftyproto_synthetic_libs="-lfty_proto"
+        fty_proto_synthetic_cflags=""
+        fty_proto_synthetic_libs="-lftyproto"
 
         if test -n "${with_libfty_proto}" && test x"${with_libfty_proto}" != xyes && test x"${with_libfty_proto}" != xno; then
-            if test -r "${with_libfty_proto}/include/fty_proto.h"; then
-                ftyproto_synthetic_cflags="-I${with_libfty_proto}/include"
-                ftyproto_synthetic_libs="-L${with_libfty_proto}/lib -lfty_proto"
+            if test -r "${with_libfty_proto}/include/ftyproto.h"; then
+                fty_proto_synthetic_cflags="-I${with_libfty_proto}/include"
+                fty_proto_synthetic_libs="-L${with_libfty_proto}/lib -lftyproto"
             else
-            AC_MSG_ERROR([Header file ${with_libfty_proto}/include/fty_proto.h was not found. Please check libfty_proto prefix])
+            AC_MSG_ERROR([Header file ${with_libfty_proto}/include/ftyproto.h was not found. Please check libfty_proto prefix])
             fi
         else
-            AC_CHECK_HEADER([fty_proto.h], [],
-            AC_MSG_ERROR([Header file fty_proto.h was not found in default search paths])
+            AC_CHECK_HEADER([ftyproto.h], [],
+            AC_MSG_ERROR([Header file ftyproto.h was not found in default search paths])
                 )
         fi
 
-        AC_CHECK_LIB([fty_proto], [fty_proto_test],
+        AC_CHECK_LIB([ftyproto], [fty_proto_test],
             [
-                was_ftyproto_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lfty_proto"
-                found_linkname="fty_proto"
+                was_fty_proto_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lftyproto"
+                found_linkname="ftyproto"
             ],
-            [AC_MSG_ERROR([cannot link with -lfty_proto, install libfty_proto])])
+            [AC_MSG_ERROR([cannot link with -lftyproto, install libfty_proto])])
     ])
 
 dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_proto
-    AS_CASE(["x${was_ftyproto_check_lib_detected}"],
+    AS_CASE(["x${was_fty_proto_check_lib_detected}"],
         [xpkgcfg], [
                 AC_SUBST([pkgconfig_name_libfty_proto],[${found_pkgconfig}])
-                CFLAGS="${ftyproto_CFLAGS} ${CFLAGS}"
-                LIBS="${ftyproto_LIBS} ${LIBS}"
+                CFLAGS="${fty_proto_CFLAGS} ${CFLAGS}"
+                LIBS="${fty_proto_LIBS} ${LIBS}"
             ],
         [xyes], [
                 AC_SUBST([pkgconfig_name_libfty_proto],[${found_linkname}])
-                CFLAGS="${ftyproto_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${ftyproto_synthetic_libs} ${LDFLAGS}"
-                LIBS="${ftyproto_synthetic_libs} ${LIBS}"
+                CFLAGS="${fty_proto_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${fty_proto_synthetic_libs} ${LDFLAGS}"
+                LIBS="${fty_proto_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([ftyproto_CFLAGS],[${ftyproto_synthetic_cflags}])
-                AC_SUBST([ftyproto_LIBS],[${ftyproto_synthetic_libs}])
+                AC_SUBST([fty_proto_CFLAGS],[${fty_proto_synthetic_cflags}])
+                AC_SUBST([fty_proto_LIBS],[${fty_proto_synthetic_libs}])
             ],
         [xno], [
                 AC_SUBST([pkgconfig_name_libfty_proto],[libfty_proto])

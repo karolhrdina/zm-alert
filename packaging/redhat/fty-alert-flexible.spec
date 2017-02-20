@@ -52,7 +52,7 @@ BuildRequires:  xmlto
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  ftyproto-devel
+BuildRequires:  fty-proto-devel
 BuildRequires:  lua-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
@@ -80,7 +80,7 @@ Requires:       libfty_alert_flexible0 = %{version}
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       ftyproto-devel
+Requires:       fty-proto-devel
 Requires:       lua-devel
 
 %description devel
