@@ -71,6 +71,14 @@ FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
 FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
     rule_models (rule_t *self);
 
+// get rule types list
+FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
+    rule_types (rule_t *self);
+
+// get rule actions
+FTY_ALERT_FLEXIBLE_PRIVATE const char *
+    rule_result_actions (rule_t *self, int result);
+
 //  Load json rule from file
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);

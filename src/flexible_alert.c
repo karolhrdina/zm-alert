@@ -136,15 +136,14 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
 }
 
 void
-flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *asset, int result, const char *message, int ttl)
+flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *actions, const char *asset, int result, const char *message, int ttl)
 {
     char *severity = "OK";
     if (result == -1 || result == 1) severity = "WARNING";
     if (result == -2 || result == 2) severity = "CRITICAL";
 
     // topic
-    char *topic;
-    asprintf (&topic, "%s/%s@%s", rulename, severity, asset);
+    char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity, asset);
 
     // message
     zmsg_t *alert = fty_proto_encode_alert (
@@ -156,7 +155,7 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
         result == 0 ? "RESOLVED" : "ACTIVE",
         severity,
         message,
-        ""); // action list
+        actions); // action list
     
     mlm_client_send (self -> mlm, topic, &alert);
 
@@ -176,8 +175,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     char *param = (char *) zlist_first (rule_param_list);
     int ttl = 0;
     while (param) {
-        char *topic;
-        asprintf (&topic, "%s@%s", param, assetname);
+        char *topic = zsys_sprintf ("%s@%s", param, assetname);
         fty_proto_t *ftymsg = (fty_proto_t *) zhash_lookup (self->metrics, topic);
         if (!ftymsg) {
             // some metrics are missing
@@ -202,6 +200,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     flexible_alert_send_alert (
         self,
         rule_name (rule),
+        rule_result_actions (rule, result),
         assetname,
         result,
         message, ttl * 5 / 2
@@ -253,6 +252,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             flexible_alert_send_alert (
                 self,
                 quantity,
+                "",
                 fty_proto_name (ftymsg),
                 ivalue,
                 description,
@@ -274,8 +274,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
             // save metric into cache
             if (! metric_saved) {
                 fty_proto_set_time (ftymsg, time (NULL));
-                char *topic;
-                asprintf (&topic, "%s@%s", quantity, assetname);
+                char *topic = zsys_sprintf ("%s@%s", quantity, assetname);
                 zhash_update (self->metrics, topic, ftymsg);
                 zhash_freefn (self->metrics, topic, ftymsg_freefn);
                 *ftymsg_p = NULL;
@@ -321,6 +320,11 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
     model = fty_proto_ext_string (ftymsg, "device.part", NULL);
     if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
+    
+    const char *type = fty_proto_aux_string (ftymsg, "type", NULL);
+    if (type && zlist_exists (rule_types (rule), (void *) type)) return 1;
+    const char *subtype = fty_proto_aux_string (ftymsg, "subtype", NULL);
+    if (subtype && zlist_exists (rule_types (rule), (void *) subtype)) return 1;
     
     return 0;
 }
@@ -508,7 +512,7 @@ flexible_alert_test (bool verbose)
             60,
             "status.ups",
             "mydevice",
-            "0",
+            "64",
             "");
         mlm_client_send (metric, "status.ups@mydevice", &msg);
 

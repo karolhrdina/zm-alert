@@ -1,0 +1,20 @@
+<!--
+Installation model
+
+    1. by path & name
+    path - absolute path to the file
+    name - file name
+
+    2. type
+    * systemd-tmpfiles  - install $(project.name) to /usr/lib/systemd/tmpfiles.d/
+     -->
+
+<install>
+    <item type = "systemd-tmpfiles" />
+    <item path = "/var/lib/fty/fty-alert-flexible/rules" name = "../rules/sts-voltage.rule" />
+    <item path = "/var/lib/fty/fty-alert-flexible/rules" name = "../rules/sts-frequency.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts-voltage.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts-frequency.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/load.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/ups.rule" />
+</install>

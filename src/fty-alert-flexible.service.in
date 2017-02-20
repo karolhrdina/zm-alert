@@ -3,12 +3,16 @@
 
 [Unit]
 Description=fty-alert-flexible service
-After=network.target
+Requires=network.target malamute.service
+After=network.target malamute.service
+Before=fty-asset.service
+PartOf=bios.target
 
 [Service]
 Type=simple
+User=bios
 Environment="prefix=@prefix@"
-ExecStart=@prefix@/bin/fty-alert-flexible @sysconfdir@/@PACKAGE@/fty-alert-flexible.cfg
+ExecStart=@prefix@/bin/fty-alert-flexible --rules '/var/lib/fty/fty-alert-flexible/rules'
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=bios.target
