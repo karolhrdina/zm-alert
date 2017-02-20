@@ -73,6 +73,7 @@ int main (int argc, char *argv [])
     zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
     zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_ALERTS_SYS, NULL);
     zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_METRICS, ".*", NULL);
+    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);

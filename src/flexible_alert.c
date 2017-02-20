@@ -180,8 +180,8 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
         if (!ftymsg) {
             // some metrics are missing
             zlist_destroy (&params);
-            zstr_free (&topic);
             zsys_debug ("missing metric %s", topic);
+            zstr_free (&topic);
             return;
         }
         // TTL should be set accorning shortest ttl in metric
@@ -348,7 +348,7 @@ flexible_alert_handle_asset (flexible_alert_t *self, fty_proto_t *ftymsg)
         }
         return;
     }
-    if (streq (operation, "inventory") && streq (mlm_client_sender (self -> mlm), "asset-autoupdate")) {
+    if (streq (operation, "update")) {
         zlist_t *functions_for_asset = zlist_new ();
         zlist_autofree (functions_for_asset);
         
@@ -496,7 +496,7 @@ flexible_alert_test (bool verbose)
         zmsg_t *assetmsg = fty_proto_encode_asset (
             NULL,
             "mydevice",
-            "inventory",
+            "update",
             ext
         );
         mlm_client_send (asset, "myasset", &assetmsg);

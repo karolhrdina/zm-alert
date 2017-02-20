@@ -10,7 +10,7 @@
     "evaluation"    : "
          function main(i1, i2)
              if i1 == 'good' and i2 == 'good' then
-                 return OK, 'frequency status of both inputs of ' .. NAME .. ' is good.'
+                 return OK, 'Frequency status of both inputs of ' .. NAME .. ' are good.'
              end
              if i1 == 'good' then
                  return WARNING, 'Input 2 frequency status of ' .. NAME .. ' is ' .. i2 .. '!'
@@ -18,7 +18,7 @@
              if i2 == 'good' then
                  return WARNING, 'Input 1 frequency status of ' .. NAME .. ' is ' .. i1 .. '!'
              end
-             return CRITICAL, 'frequency status of both inputs is bad (' .. i1 .. ', ' .. i2 .. ')!'
+             return CRITICAL, 'Frequency status of both inputs are not good (' .. i1 .. ', ' .. i2 .. ')!'
          end
     "
 }
