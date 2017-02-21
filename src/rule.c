@@ -43,6 +43,7 @@ struct _rule_t {
     zlist_t *models;
     zlist_t *types;
     zhash_t *result_actions;
+    zhashx_t *variables;        //  lua context global variables
     char *evaluation;
     lua_State *lua;
 };
@@ -80,6 +81,10 @@ rule_new (void)
     zlist_comparefn (self -> types, string_comparefn);
     self -> result_actions = zhash_new ();
     zhash_autofree (self -> result_actions);
+    //  variables 
+    self->variables = zhashx_new ();
+    zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
+
     return self;
 }
 
@@ -160,6 +165,22 @@ rule_json_callback (const char *locator, const char *value, void *data)
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
     }
+    else
+    if (strncmp (locator, "variables/", 10) == 0)
+    {
+        //  locator e.g. variables/low_critical
+        char *slash = strchr (locator, '/');
+        if (!slash)
+            return 0;
+        slash = slash + 1;
+        char *variable_value = vsjson_decode_string (value);
+        if (!variable_value || strlen (variable_value) == 0) {
+            zstr_free (&variable_value);
+            return 0;
+        }
+        zhashx_insert (self->variables, slash, variable_value);
+    } 
+    
     return 0;
 }
 
@@ -310,6 +331,16 @@ static int rule_compile (rule_t *self)
     lua_setglobal(self -> lua, "LOW_WARNING");
     lua_pushnumber(self -> lua, -2);
     lua_setglobal(self -> lua, "LOW_CRITICAL");
+
+    //  set global variables
+    const char *item = (const char *) zhashx_first (self->variables);
+    while (item) {
+        const char *key = (const char *) zhashx_cursor (self->variables);
+        lua_pushstring (self->lua, item);
+        lua_setglobal (self->lua, key);
+        item = (const char *) zhashx_next (self->variables);
+    }
+
     return 1;
 }    
 
@@ -541,6 +572,7 @@ rule_destroy (rule_t **self_p)
         zlist_destroy (&self->models);
         zlist_destroy (&self->types);
         zhash_destroy (&self->result_actions);
+        zhashx_destroy (&self->variables);
         //  Free object itself
         free (self);
         *self_p = NULL;
@@ -559,14 +591,71 @@ vsjson_test (bool verbose)
 void
 rule_test (bool verbose)
 {
-    printf (" * rule: ");
+    printf (" * rule: \n");
 
     //  @selftest
     //  Simple create/destroy test
-    rule_t *self = rule_new ();
-    assert (self);
-    rule_load (self, "./rules/load.rule"); 
     {
+        printf ("      Simple create/destroy test ... ");
+        rule_t *self = rule_new ();
+        assert (self);
+        rule_destroy (&self);
+        assert (self == NULL);
+        printf ("      OK\n");
+    }
+
+    //  Load test #1
+    {
+        printf ("      Load test #1 ... ");
+        rule_t *self = rule_new ();
+        assert (self);
+        rule_load (self, "./rules/load.rule"); 
+        rule_destroy (&self);
+        assert (self == NULL);
+        printf ("      OK\n");
+    }
+
+    //  Load test #2 - tests 'variables' section
+    {
+        printf ("      Load test #2 - 'variables' section ... ");
+        rule_t *self = rule_new ();
+        assert (self);
+        rule_load (self, "./rules/threshold.rule");
+
+        //  prepare expected 'variables' hash 
+        zhashx_t *expected = zhashx_new ();
+        assert (expected);
+        zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
+        zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
+
+        zhashx_insert (expected, "high_critical", (void *) "60");
+        zhashx_insert (expected, "high_warning", (void *) "40");
+        zhashx_insert (expected, "low_warning", (void *) "15");
+        zhashx_insert (expected, "low_critical", (void *) "5");
+
+        //  compare it against loaded 'variables'
+        const char *item = (const char *) zhashx_first (self->variables);
+        while (item) {
+            const char *key = (const char *) zhashx_cursor (self->variables);
+            const char *expected_value = (const char *) zhashx_lookup (expected, key);
+            assert (expected_value);
+            assert (streq (item, expected_value));
+            zhashx_delete (expected, key);
+            item = (const char *) zhashx_next (self->variables);
+        }
+        assert (zhashx_size (expected) == 0);
+        zhashx_destroy (&expected);
+        rule_destroy (&self);
+        assert (self == NULL);
+        printf ("      OK\n");
+    }
+    
+    //  Load test #3 - json construction test 
+    { 
+        printf ("      Load test #3 - json construction test ... ");
+        rule_t *self = rule_new ();
+        assert (self);
+        rule_load (self, "./rules/load.rule"); 
         // test rule to json
         char *json = rule_json (self);
         rule_t *rule = rule_new ();
@@ -574,8 +663,9 @@ rule_test (bool verbose)
         assert (streq (rule_name(rule), rule_name (self)));
         rule_destroy (&rule);
         zstr_free (&json);
+        rule_destroy (&self);
+        printf ("      OK\n");
     }
-    rule_destroy (&self);
     //  @end
     printf ("OK\n");
 }
