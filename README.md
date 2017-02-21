@@ -16,6 +16,15 @@ Evaluation function is written in Lua.
     "models"        : [],
     "types"         : [],
     "groups"        : ["allupses"],
+    "results"       :  {
+        "low_critical"  : { "action" : ["EMAIL", "SMS"] },
+        "low_warning"   : { "action" : ["EMAIL"] },
+        "high_critical" : { "action" : ["EMAIL", "SMS" ] },
+        "high_warning"  : { "action" : ["EMAIL" ] }
+    },
+    "variables" : {
+        "my_global_variable"  : "Something nice or even a number"
+    },
     "evaluation"    : "
          function main(load)
              if load > 90 then
@@ -48,6 +57,8 @@ following parts
 * models - optional - rule will be applied to assets of listed model or
   part number (see extended attribute model and device.part)
 * types - optional - rule will be applied to asset of listed type or subtype
+* results - optional - List of actions on alert
+* variables - optional - List of global (lua context) variables
 * evaluation - mandatory - Lua code for producing alert.
 
 You can combine assets, groups and models in one rule.
