@@ -83,6 +83,7 @@ rule_new (void)
     zhash_autofree (self -> result_actions);
     //  variables 
     self->variables = zhashx_new ();
+    zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
     zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
 
     return self;
@@ -179,6 +180,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
             return 0;
         }
         zhashx_insert (self->variables, slash, variable_value);
+        zstr_free (&variable_value);
     } 
     
     return 0;
@@ -262,6 +264,19 @@ const char *rule_result_actions (rule_t *self, int result)
     }
     return "";
 }
+
+//  --------------------------------------------------------------------------
+//  Get global variables
+//  Caller is responsible for destroying the return value
+
+zhashx_t *
+rule_global_variables (rule_t *self)
+{
+    assert (self);
+    return zhashx_dup (self->variables);
+
+}
+
 
 //  --------------------------------------------------------------------------
 //  Load json rule from file

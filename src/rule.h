@@ -79,6 +79,11 @@ FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
 FTY_ALERT_FLEXIBLE_PRIVATE const char *
     rule_result_actions (rule_t *self, int result);
 
+//  Get global variables
+//  Caller is responsible for destroying the return value
+FTY_ALERT_FLEXIBLE_PRIVATE zhashx_t *
+    rule_global_variables (rule_t *self);
+
 //  Load json rule from file
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);
