@@ -1,0 +1,17 @@
+{
+    "name"          : "sts-preferred-source",
+    "description"   : "STS/ATS preferred source alert",
+    "metrics"       : ["input.source", "input.source.preferred"],
+    "types"         : ["sts"],
+    "results"       :  {
+        "high_warning"  : { "action" : ["EMAIL"] }
+    },
+    "evaluation"    : "
+         function main(input, preferred)
+             if input == preferred then
+                 return OK, 'ATS ' .. NAME .. ' is running from preferred input.'
+             end
+             return WARNING, 'ATS ' .. NAME .. ' is running from input ' .. input .. ' (preferred is ' .. preferred .. ')!'
+         end
+    "
+}
