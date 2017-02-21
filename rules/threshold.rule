@@ -1,0 +1,37 @@
+{
+    "name"          : "humidity",
+    "description"   : "humidity threshold rule",
+    "metrics"       : ["humidity"],
+    "assets"        : [ ],
+    "models"        : [ ],
+    "groups"        : ["all-racks"],
+    "results"       :  {
+        "low_critical"  : { "action" : ["EMAIL", "SMS"] },
+        "low_warning"   : { "action" : ["EMAIL"] },
+        "high_critical" : { "action" : ["EMAIL", "SMS" ] },
+        "high_warning"  : { "action" : ["EMAIL" ] }
+    },
+    "variables" : {
+        "low_critical"  : "5",
+        "low_warning"   : "15",
+        "high_warning"  : "40",
+        "high_critical" : "60"
+    },
+    "evaluation"    : "
+            function main (humidity)
+                if (humidity < low_critical) then
+                    return LOW_CRITICAL, 'Humidity in '..NAME..' is critically low ('..humidity..'%)'
+                end
+                if (humidity < low_warning) then
+                    return LOW_WARNING, 'Humidity in '..NAME..' is low ('..humidity..'%)'
+                end
+                if (humidity > high_critical) then 
+                    return HIGH_CRITICAL, 'Humidity in '..NAME..' is critically high ('..humidity..'%)'
+                end
+                if (humidity > high_warning) then
+                    return HIGH_WARNING, 'Humidity in '..NAME..' is high ('..humidity..'%)'
+                end
+                return OK, "Humidity is within normal limits."
+            end
+    "
+}
