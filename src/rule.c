@@ -379,6 +379,180 @@ void rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result
 }
 
 //  --------------------------------------------------------------------------
+//  Create json from rule
+
+static char * s_string_append (char **string_p, size_t *capacity, const char *append)
+{
+    if (! string_p) return NULL;
+    if (! append) return *string_p;
+    
+    char *string = *string_p;
+    if (!string) {
+        string = (char *) zmalloc (512);
+        *capacity = 512;
+    }
+    size_t l1 = strlen (string);
+    size_t l2 = strlen (append);
+    size_t required = l1+l2+1;
+    if (*capacity < required) {
+        size_t newcapacity = *capacity;
+        while (newcapacity < required) {
+            newcapacity += 512;
+        }
+        char *tmp = (char *) realloc (string, newcapacity);
+        if (!tmp) {
+            free (string);
+            *capacity = 0;
+            return NULL;
+        }
+        string = tmp;
+        *capacity = newcapacity;
+    }
+    strncat (string, append, *capacity);
+    *string_p = string;
+    return string;
+}
+
+static char * s_zlist_to_json_array (zlist_t* list)
+{
+    if (!list) return strdup("[]");
+    char *item = (char *) zlist_first (list);
+    char *json = NULL;
+    size_t jsonsize = 0;
+    s_string_append (&json, &jsonsize, "[");
+    while (item) {
+        char *encoded = vsjson_encode_string (item);
+        s_string_append (&json, &jsonsize, encoded);
+        s_string_append (&json, &jsonsize, ", ");
+        zstr_free (&encoded);
+        item = (char *) zlist_next (list);
+    }
+    if (zlist_size (list)) {
+        size_t x = strlen (json);
+        json [x-2] = 0;
+    }
+    s_string_append (&json, &jsonsize, "]");
+    return json;
+}
+
+static char * s_actions_to_json_array (const char *actions)
+{
+    char *array = NULL;
+    char *a2 = strdup (actions);
+    size_t capacity = 0;
+
+    char *start = a2;
+    s_string_append (&array, &capacity, "[");
+    while (start) {
+        char *end = strchr (start, '/');
+        if (end) {
+            *end = 0;
+            char *action = vsjson_encode_string (start);
+            s_string_append (&array, &capacity, action);
+            s_string_append (&array, &capacity, ", ");
+            zstr_free (&action);
+            start = end;
+            ++start;
+        } else {
+            char *action = vsjson_encode_string (start);
+            s_string_append (&array, &capacity, action);
+            zstr_free (&action);
+            start = NULL;
+        }
+    }
+    zstr_free (&a2);
+    s_string_append (&array, &capacity, "]");
+    return array;
+}
+
+char * rule_json (rule_t *self)
+{
+    if (!self) return NULL;
+    
+    char *json = NULL;
+    size_t jsonsize = 0;
+    {
+        //json start + name
+        char *jname = vsjson_encode_string (self->name);
+        s_string_append (&json, &jsonsize, "{\n\"name\":");
+        s_string_append (&json, &jsonsize, jname);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&jname);
+    }
+    {
+        char *desc = vsjson_encode_string (self->description);
+        s_string_append (&json, &jsonsize, "\"description\":");
+        s_string_append (&json, &jsonsize, desc);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&desc);
+    }
+    {
+        //metrics
+        char *tmp = s_zlist_to_json_array (self->metrics); 
+        s_string_append (&json, &jsonsize, "\"metrics\":");
+        s_string_append (&json, &jsonsize, tmp);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&tmp); 
+    }
+    {
+        //assets
+        char *tmp = s_zlist_to_json_array (self->assets); 
+        s_string_append (&json, &jsonsize, "\"assets\":");
+        s_string_append (&json, &jsonsize, tmp);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&tmp); 
+    }
+    {
+        //models
+        char *tmp = s_zlist_to_json_array (self->models); 
+        s_string_append (&json, &jsonsize, "\"models\":");
+        s_string_append (&json, &jsonsize, tmp);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&tmp); 
+    }
+    {
+        //groups
+        char *tmp = s_zlist_to_json_array (self->groups); 
+        s_string_append (&json, &jsonsize, "\"groups\":");
+        s_string_append (&json, &jsonsize, tmp);
+        s_string_append (&json, &jsonsize, ",\n");
+        zstr_free (&tmp); 
+    }
+    {
+        //results
+        s_string_append (&json, &jsonsize, "\"results\": {\n");
+        const void *result = zhash_first (self->result_actions);
+        bool first = true;
+        while (result) {
+            if (first) {
+                first = false;
+            } else {
+                s_string_append (&json, &jsonsize, ",\n");
+            }
+            char *key = vsjson_encode_string (zhash_cursor (self->result_actions));
+            s_string_append (&json, &jsonsize, key);
+            s_string_append (&json, &jsonsize, ": {\"actions\":");
+            char *array = s_actions_to_json_array ( (const char *)result);
+            s_string_append (&json, &jsonsize, array);
+            s_string_append (&json, &jsonsize, "}");
+            zstr_free (&array);
+            zstr_free (&key);
+            result = zhash_next (self->result_actions);
+        }
+        s_string_append (&json, &jsonsize, "},\n");
+    }
+    {
+        //json evaluation
+        char *eval = vsjson_encode_string (self->evaluation);
+        s_string_append (&json, &jsonsize, "\"evaluation\":");
+        s_string_append (&json, &jsonsize, eval);
+        s_string_append (&json, &jsonsize, "\n}\n");
+        zstr_free (&eval);
+    }
+    return json;
+}
+
+//  --------------------------------------------------------------------------
 //  Destroy the rule
 
 void
@@ -474,7 +648,24 @@ rule_test (bool verbose)
         rule_destroy (&self);
         assert (self == NULL);
         printf ("      OK\n");
-    }   
+    }
+    
+    //  Load test #3 - json construction test 
+    { 
+        printf ("      Load test #3 - json construction test ... ");
+        rule_t *self = rule_new ();
+        assert (self);
+        rule_load (self, "./rules/load.rule"); 
+        // test rule to json
+        char *json = rule_json (self);
+        rule_t *rule = rule_new ();
+        rule_parse (rule, json);
+        assert (streq (rule_name(rule), rule_name (self)));
+        rule_destroy (&rule);
+        zstr_free (&json);
+        rule_destroy (&self);
+        printf ("      OK\n");
+    }
     //  @end
     printf ("OK\n");
 }
