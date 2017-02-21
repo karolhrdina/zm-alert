@@ -43,6 +43,7 @@ struct _rule_t {
     zlist_t *models;
     zlist_t *types;
     zhash_t *result_actions;
+    zhashx_t *variables;        //  lua context global variables
     char *evaluation;
     lua_State *lua;
 };
@@ -80,6 +81,11 @@ rule_new (void)
     zlist_comparefn (self -> types, string_comparefn);
     self -> result_actions = zhash_new ();
     zhash_autofree (self -> result_actions);
+    //  variables 
+    self->variables = zhashx_new ();
+    zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
+    zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
+
     return self;
 }
 
@@ -310,6 +316,16 @@ static int rule_compile (rule_t *self)
     lua_setglobal(self -> lua, "LOW_WARNING");
     lua_pushnumber(self -> lua, -2);
     lua_setglobal(self -> lua, "LOW_CRITICAL");
+
+    //  set global variables
+    const char *item = (const char *) zhashx_first (self->variables);
+    while (item) {
+        const void *key = zhashx_cursor (self->variables);
+        lua_pushstring (self->lua, item);
+        lua_setglobal (self->lua, key);
+        item = (const char *) zhashx_next (self->variables);
+    }
+
     return 1;
 }    
 
@@ -367,6 +383,7 @@ rule_destroy (rule_t **self_p)
         zlist_destroy (&self->models);
         zlist_destroy (&self->types);
         zhash_destroy (&self->result_actions);
+        zhashx_destroy (&self->variables);
         //  Free object itself
         free (self);
         *self_p = NULL;
