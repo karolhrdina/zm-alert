@@ -83,7 +83,6 @@ rule_new (void)
     zhash_autofree (self -> result_actions);
     //  variables 
     self->variables = zhashx_new ();
-    zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
     zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
 
     return self;
@@ -166,10 +165,22 @@ rule_json_callback (const char *locator, const char *value, void *data)
     else if (streq (locator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
     }
-    /*
     else
-    if (strncmp (locator, "variables", 
-    */
+    if (strncmp (locator, "variables/", 10) == 0)
+    {
+        //  locator e.g. variables/low_critical
+        char *slash = strchr (locator, '/');
+        if (!slash)
+            return 0;
+        slash = slash + 1;
+        char *variable_value = vsjson_decode_string (value);
+        if (!variable_value || strlen (variable_value) == 0) {
+            zstr_free (&variable_value);
+            return 0;
+        }
+        zhashx_insert (self->variables, slash, variable_value);
+    } 
+    
     return 0;
 }
 
@@ -452,8 +463,9 @@ rule_test (bool verbose)
         const char *item = (const char *) zhashx_first (self->variables);
         while (item) {
             const char *key = (const char *) zhashx_cursor (self->variables);
-//            printf ("Checking key '%s' value '%s'\n", key, item);
-            assert (zhashx_lookup (expected, key) != NULL);
+            const char *expected_value = (const char *) zhashx_lookup (expected, key);
+            assert (expected_value);
+            assert (streq (item, expected_value));
             zhashx_delete (expected, key);
             item = (const char *) zhashx_next (self->variables);
         }
