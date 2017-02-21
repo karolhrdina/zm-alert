@@ -83,6 +83,10 @@ FTY_ALERT_FLEXIBLE_PRIVATE const char *
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);
 
+// convert rule back to json
+FTY_ALERT_FLEXIBLE_PRIVATE char *
+    rule_json (rule_t *self);
+
 // evaluate rule
 FTY_ALERT_FLEXIBLE_PRIVATE void
     rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message);
