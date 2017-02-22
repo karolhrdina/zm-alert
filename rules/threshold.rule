@@ -31,7 +31,7 @@
                 if (humidity > high_warning) then
                     return HIGH_WARNING, 'Humidity in '..NAME..' is high ('..humidity..'%)'
                 end
-                return OK, "Humidity is within normal limits."
+                return OK, 'Humidity is within normal limits.'
             end
     "
 }
