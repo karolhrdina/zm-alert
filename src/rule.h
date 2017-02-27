@@ -51,43 +51,57 @@ FTY_ALERT_FLEXIBLE_PRIVATE void
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_parse (rule_t *self, const char *json);
 
-// get rule name
+//  Get rule name
 FTY_ALERT_FLEXIBLE_PRIVATE const char *
     rule_name (rule_t *self);
 
-// get rule asset list
-FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
-    rule_assets (rule_t *self);
+//  Does rule contain this asset name?
+FTY_ALERT_FLEXIBLE_PRIVATE bool
+    rule_asset_exists (rule_t *self, const char *asset);
 
-// get rule group list
-FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
-    rule_groups (rule_t *self);
+//  Does rule contain this group name?
+FTY_ALERT_FLEXIBLE_PRIVATE bool
+    rule_group_exists (rule_t *self, const char *group);
 
-// get rule group list
-FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
-    rule_metrics (rule_t *self);
+//  Does rule contain this metric? 
+FTY_ALERT_FLEXIBLE_PRIVATE bool
+    rule_metric_exists (rule_t *self, const char *metric);
 
-// get rule model/PN list
-FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
-    rule_models (rule_t *self);
+//  Return the first metric. If there are no metrics, returns NULL.
+FTY_ALERT_FLEXIBLE_PRIVATE const char *
+    rule_metric_first (rule_t *self);
 
-// get rule types list
-FTY_ALERT_FLEXIBLE_PRIVATE zlist_t *
-    rule_types (rule_t *self);
+//  Return the next metric. If there are no (more) metrics, returns NULL.
+FTY_ALERT_FLEXIBLE_PRIVATE const char *
+    rule_metric_next (rule_t *self);
 
-// get rule actions
+//  Does rule contain this model?
+FTY_ALERT_FLEXIBLE_PRIVATE bool
+    rule_model_exists (rule_t *self, const char *model);
+
+//  Does rule contain this type?
+FTY_ALERT_FLEXIBLE_PRIVATE bool
+    rule_type_exists (rule_t *self, const char *type);
+
+//  Get rule actions
 FTY_ALERT_FLEXIBLE_PRIVATE const char *
     rule_result_actions (rule_t *self, int result);
+
+//  Get global variables
+//  Caller is responsible for destroying the return value
+FTY_ALERT_FLEXIBLE_PRIVATE zhashx_t *
+    rule_global_variables (rule_t *self);
 
 //  Load json rule from file
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);
 
-// convert rule back to json
+//  Convert rule back to json
+//  Caller is responsible for destroying the return value
 FTY_ALERT_FLEXIBLE_PRIVATE char *
     rule_json (rule_t *self);
 
-// evaluate rule
+//  Evaluate rule
 FTY_ALERT_FLEXIBLE_PRIVATE void
     rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message);
 
