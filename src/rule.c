@@ -630,6 +630,30 @@ rule_json (rule_t *self)
         s_string_append (&json, &jsonsize, "},\n");
     }
     {
+        //variables
+        if (zhashx_size (self->variables)) {
+            s_string_append (&json, &jsonsize, "\"variables\": {\n");
+            char *item = (char *)zhashx_first (self->variables);
+            bool first = true;
+            while (item) {
+                if (first) {
+                    first = false;
+                } else {
+                    s_string_append (&json, &jsonsize, ",\n");
+                }
+                char *key = vsjson_encode_string((char *)zhashx_cursor (self->variables));
+                char *value = vsjson_encode_string (item);
+                s_string_append (&json, &jsonsize, key);
+                s_string_append (&json, &jsonsize, ":");
+                s_string_append (&json, &jsonsize, value);                
+                zstr_free (&key);
+                zstr_free (&value);
+                item = (char *) zhashx_next (self->variables);
+            }
+            s_string_append (&json, &jsonsize, "},\n");
+        }
+    }
+    {
         //json evaluation
         char *eval = vsjson_encode_string (self->evaluation);
         s_string_append (&json, &jsonsize, "\"evaluation\":");
@@ -709,7 +733,6 @@ rule_test (bool verbose)
         rule_t *self = rule_new ();
         assert (self);
         rule_load (self, "./rules/threshold.rule");
-
         //  prepare expected 'variables' hash 
         zhashx_t *expected = zhashx_new ();
         assert (expected);
