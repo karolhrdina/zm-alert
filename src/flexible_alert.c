@@ -171,9 +171,9 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     zlist_autofree (params);
     
     // prepare lua function parameters
-    zlist_t *rule_param_list = rule_metrics (rule);
-    char *param = (char *) zlist_first (rule_param_list);
     int ttl = 0;
+
+    const char *param = rule_metric_first (rule);
     while (param) {
         char *topic = zsys_sprintf ("%s@%s", param, assetname);
         fty_proto_t *ftymsg = (fty_proto_t *) zhash_lookup (self->metrics, topic);
@@ -188,7 +188,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
         if (ttl == 0 || ttl > fty_proto_ttl (ftymsg)) ttl = fty_proto_ttl (ftymsg);
         zstr_free (&topic);
         zlist_append (params, (char *) fty_proto_value (ftymsg));
-        param = (char *) zlist_next (rule_param_list);
+        param = rule_metric_next (rule);
     }
 
     // call the lua function
@@ -269,7 +269,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     bool metric_saved =  false;
     while (func) {
         rule_t *rule = (rule_t *) zhash_lookup (self -> rules, func);
-        if (zlist_exists (rule_metrics (rule), (char *)quantity)) {
+        if (rule_metric_exists (rule, quantity)) { 
             // we have to evaluate this function for our asset
             // save metric into cache
             if (! metric_saved) {
@@ -297,8 +297,8 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
 {
     if (!rule || !ftymsg) return 0;
 
-    char *asset = (char *)fty_proto_name (ftymsg);
-    if (zlist_exists (rule_assets(rule), asset)) return 1;
+    if (rule_asset_exists (rule, fty_proto_name (ftymsg)))
+        return 1;
 
     zhash_t *ext = fty_proto_ext (ftymsg);
     zlist_t *keys = zhash_keys (ext);
@@ -306,8 +306,7 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     while (key) {
         if (strncmp ("group.", key, 6) == 0) {
             // this is group
-            char * grp = (char *)zhash_lookup (ext, key);
-            if (zlist_exists (rule_groups (rule), grp)) {
+            if (rule_group_exists (rule, (char *) zhash_lookup (ext, key))) {
                 zlist_destroy (&keys);
                 return 1;
             }
@@ -316,15 +315,15 @@ is_rule_for_this_asset (rule_t *rule, fty_proto_t *ftymsg)
     }
     zlist_destroy (&keys);
     
-    const char *model = fty_proto_ext_string (ftymsg, "model", NULL);
-    if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
-    model = fty_proto_ext_string (ftymsg, "device.part", NULL);
-    if (model && zlist_exists (rule_models (rule), (void *) model)) return 1;
-    
-    const char *type = fty_proto_aux_string (ftymsg, "type", NULL);
-    if (type && zlist_exists (rule_types (rule), (void *) type)) return 1;
-    const char *subtype = fty_proto_aux_string (ftymsg, "subtype", NULL);
-    if (subtype && zlist_exists (rule_types (rule), (void *) subtype)) return 1;
+    if (rule_model_exists (rule, fty_proto_ext_string (ftymsg, "model", "")))
+        return 1;
+    if (rule_model_exists (rule, fty_proto_ext_string (ftymsg, "device.part", "")))
+        return 1;
+
+    if (rule_type_exists (rule, fty_proto_aux_string (ftymsg, "type", "")))
+        return 1;        
+    if (rule_type_exists (rule, fty_proto_aux_string (ftymsg, "subtype", "")))
+        return 1;
     
     return 0;
 }

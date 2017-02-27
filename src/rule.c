@@ -138,12 +138,14 @@ rule_json_callback (const char *locator, const char *value, void *data)
     }
     else if (strncmp (locator, "models/", 7) == 0) {
         char *model = vsjson_decode_string (value);
-        zlist_append (self -> models, model);
+        if (model && strlen (model) > 0)
+            zlist_append (self->models, model);
         zstr_free (&model);
     }
     else if (strncmp (locator, "types/", 6) == 0) {
         char *type = vsjson_decode_string (value);
-        zlist_append (self -> types, type);
+        if (type && strlen (type) > 0)
+            zlist_append (self->types, type);
         zstr_free (&type);
     }
     else if (strncmp (locator, "results/", 8) == 0) {
@@ -195,45 +197,105 @@ int rule_parse (rule_t *self, const char *json)
 }
 
 //  --------------------------------------------------------------------------
-//  Rule getters
+//  Get rule name
 
-const char *rule_name (rule_t *self)
+const char *
+rule_name (rule_t *self)
 {
-    if (self) return self->name;
-    return NULL;
+    assert (self);
+    return self->name;
 }
 
-zlist_t *rule_assets (rule_t *self)
+
+//  --------------------------------------------------------------------------
+//  Does rule contain this asset name?
+
+bool
+rule_asset_exists (rule_t *self, const char *asset)
 {
-    if (self) return self->assets;
-    return NULL;
+    assert (self);
+    assert (asset);
+
+    return zlist_exists (self->assets, (void *) asset);
 }
 
-zlist_t *rule_groups (rule_t *self)
+//  --------------------------------------------------------------------------
+//  Does rule contain this group name?
+
+bool
+rule_group_exists (rule_t *self, const char *group)
 {
-    if (self) return self->groups;
-    return NULL;
+    assert (self);
+    assert (group);
+
+    return zlist_exists (self->groups, (void *) group);
 }
 
-zlist_t *rule_metrics (rule_t *self)
+
+//  --------------------------------------------------------------------------
+//  Does rule contain this metric? 
+
+bool
+rule_metric_exists (rule_t *self, const char *metric)
 {
-    if (self) return self->metrics;
-    return NULL;
+    assert (self);
+    assert (metric);
+
+    return zlist_exists (self->metrics, (void *) metric);
 }
 
-zlist_t *rule_models (rule_t *self)
+//  --------------------------------------------------------------------------
+//  Return the first metric. If there are no metrics, returns NULL.
+
+const char *
+rule_metric_first (rule_t *self)
 {
-    if (self) return self->models;
-    return NULL;
+    assert (self);
+    return (const char *) zlist_first (self->metrics);
 }
 
-zlist_t *rule_types (rule_t *self)
+
+//  --------------------------------------------------------------------------
+//  Return the next metric. If there are no (more) metrics, returns NULL.
+
+const char *
+rule_metric_next (rule_t *self)
 {
-    if (self) return self->types;
-    return NULL;
+    assert (self);
+    return (const char *) zlist_next (self->metrics);
 }
 
-const char *rule_result_actions (rule_t *self, int result)
+
+//  --------------------------------------------------------------------------
+//  Does rule contain this model?
+
+bool
+rule_model_exists (rule_t *self, const char *model)
+{
+    assert (self);
+    assert (model);
+
+    return zlist_exists (self->models, (void *) model);
+}
+
+
+//  --------------------------------------------------------------------------
+//  Does rule contain this type?
+
+bool
+rule_type_exists (rule_t *self, const char *type)
+{
+    assert (self);
+    assert (type);
+
+    return zlist_exists (self->types, (void *) type);
+}
+
+//  --------------------------------------------------------------------------
+//  Get rule actions
+
+const char *
+rule_result_actions (rule_t *self, int result)
 {
     if (self) {
         char *results;
@@ -359,7 +421,12 @@ static int rule_compile (rule_t *self)
     return 1;
 }    
 
-void rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message)
+
+//  --------------------------------------------------------------------------
+//  Evaluate rule
+
+void
+rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message)
 {
     if (!self || !params || !name || !result || !message) return;
     
@@ -480,7 +547,13 @@ static char * s_actions_to_json_array (const char *actions)
     return array;
 }
 
-char * rule_json (rule_t *self)
+
+//  --------------------------------------------------------------------------
+//  Convert rule back to json
+//  Caller is responsible for destroying the return value
+
+char *
+rule_json (rule_t *self)
 {
     if (!self) return NULL;
     
