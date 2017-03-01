@@ -49,6 +49,7 @@ const char *_vsjson_set_token (vsjson_t *self, const char *ptr, size_t len)
         return self->token;
     }
     if (self->token) {
+        printf ("free 1\n");
         free (self->token);
         self->token = NULL;
         self->tokensize = 0;
@@ -220,7 +221,9 @@ void vsjson_destroy (vsjson_t **self_p)
     if (!self_p) return;
     if (!*self_p) return;
     vsjson_t *self = *self_p;
+    printf ("free 2\n");
     if (self->text) free (self->text);
+    printf ("free 3\n");
     if (self->token) free (self->token);
     free (self);
     *self_p = NULL;
@@ -284,8 +287,10 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
                 if (result != 0) goto cleanup;
                 break;
             }
+            printf ("free 4\n");
             free (locator);
             locator = NULL;
+            printf ("free 5\n");
             free (key);
             key = NULL;
             break;
@@ -312,7 +317,9 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
         }
     }
  cleanup:
+    printf ("free 6\n");
     if (locator) free (locator);
+    printf ("free 7\n");
     if (key) free (key);
     return result;
 }
@@ -358,6 +365,7 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
             if (result != 0) goto cleanup;
             break;
         }
+        printf ("free 8\n");
         free (locator);
         locator = NULL;
 
@@ -380,6 +388,7 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
         }
     }
  cleanup:
+    printf ("free 9\n");
     if (locator) free (locator);
     return result;
 }
@@ -429,6 +438,7 @@ char *vsjson_decode_string (const char *string)
     
     if (string[0] != '"' || string[strlen (string)-1] != '"') {
         // no quotes, this is not json string
+        printf ("free 10\n");
         free (decoded);
         return NULL;
     }
@@ -532,6 +542,7 @@ char *vsjson_encode_string (const char *string)
                 memset (&encoded[capacity], 0, add);
                 capacity += add;
             }else {
+                printf ("free 11\n");
                 free (encoded);
                 return NULL;
             }
