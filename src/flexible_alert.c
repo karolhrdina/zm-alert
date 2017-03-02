@@ -503,9 +503,7 @@ flexible_alert_add_rule (flexible_alert_t *self, const char *json, const char *o
         zstr_free (&path);
     }
     
-    zsys_debug ("destroying newrule");
     rule_destroy (&newrule);
-    zsys_debug ("destroying newrule done");
     return reply;
 }
 
@@ -773,7 +771,6 @@ flexible_alert_test (bool verbose)
         mlm_client_sendto (asset, "me", "ignored", NULL, 1000, &msg);
         
         zmsg_t *reply = mlm_client_recv (asset);
-        zmsg_print (reply);
         char *item = zmsg_popstr (reply);
         assert (streq ("OK", item));
         zstr_free (&item);
@@ -795,7 +792,6 @@ flexible_alert_test (bool verbose)
         mlm_client_sendto (asset, "me", "ignored", NULL, 1000, &msg);
         
         zmsg_t *reply = mlm_client_recv (asset);
-        zmsg_print (reply);
         
         char *item = zmsg_popstr (reply);
         assert (streq ("DELETE", item));

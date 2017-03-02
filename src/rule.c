@@ -115,7 +115,6 @@ rule_json_callback (const char *locator, const char *value, void *data)
     
     rule_t *self = (rule_t *) data;
     
-    zsys_debug ("locator: %s -> %s", locator, value);
     if (streq (locator, "name")) {
         self -> name = vsjson_decode_string (value);
     }
@@ -346,7 +345,6 @@ rule_global_variables (rule_t *self)
 
 int rule_load (rule_t *self, const char *path)
 {
-    zsys_debug ("rule_load 1");
     int fd = open (path, O_RDONLY);
     if (fd == -1) return -1;
     
@@ -356,16 +354,13 @@ int rule_load (rule_t *self, const char *path)
     }
 
     int capacity = rstat.st_size + 1;
-    zsys_debug ("rule_load allocating %i bytes", capacity);
     char *buffer = (char *) zmalloc (capacity + 1);
     assert (buffer);
-    zsys_debug ("rule_load allocated buffer", capacity);
 
     if (read (fd, buffer, capacity) == -1) {
         zsys_error ("Error while reading rule %s", path);
     }
     close (fd);
-    printf ("buffer json  \n-----%s\n-----\n", buffer);
     int result = rule_parse (self, buffer);
     free (buffer);
     return result;
