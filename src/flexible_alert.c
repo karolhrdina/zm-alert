@@ -100,6 +100,23 @@ flexible_alert_destroy (flexible_alert_t **self_p)
 //  Load all rules in directory. Rule MUST have ".rule" extension.
 
 void
+flexible_alert_load_one_rule (flexible_alert_t *self, const char *fullpath)
+{
+    rule_t *rule = rule_new();
+    if (rule_load (rule, fullpath) == 0) {
+        zsys_debug ("rule %s loaded", fullpath);
+        zhash_update (self->rules, rule_name (rule), rule);
+        zhash_freefn (self->rules, rule_name (rule), rule_freefn);
+    } else {
+        zsys_error ("failed to load rule '%s'", fullpath);
+        rule_destroy (&rule);
+    }
+}
+
+//  --------------------------------------------------------------------------
+//  Load all rules in directory. Rule MUST have ".rule" extension.
+
+void
 flexible_alert_load_rules (flexible_alert_t *self, const char *path)
 {
     if (!self || !path) return;
@@ -119,16 +136,8 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
             zsys_debug ("loading rule file: %s", entry -> d_name);
             if ( l > 5 && streq (&(entry -> d_name[l - 5]), ".rule")) {
                 // json file
-                rule_t *rule = rule_new();
                 snprintf (fullpath, PATH_MAX, "%s/%s", path, entry -> d_name);
-                if (rule_load (rule, fullpath) == 0) {
-                    zsys_debug ("rule %s loaded", entry -> d_name);
-                    zhash_update (self->rules, rule_name (rule), rule);
-                    zhash_freefn (self->rules, rule_name (rule), rule_freefn);
-                } else {
-                    zsys_error ("failed to load rule '%s'", entry -> d_name);
-                    rule_destroy (&rule);
-                }
+                flexible_alert_load_one_rule (self, fullpath);
             }
         }
     }
@@ -371,6 +380,134 @@ flexible_alert_handle_asset (flexible_alert_t *self, fty_proto_t *ftymsg)
 }
 
 //  --------------------------------------------------------------------------
+//  handling requests for list of rules.
+//  type can be all or flexible in this agent
+//  class is just for compatibility with alert engine protocol
+
+zmsg_t *
+flexible_alert_list_rules (flexible_alert_t *self, char *type, char *ruleclass)
+{
+    if (! self || ! type) return NULL;
+    
+    zmsg_t *reply = zmsg_new ();
+    if (! streq (type, "all") && ! streq (type, "flexible")) {
+        zmsg_addstr (reply, "ERROR");
+        zmsg_addstr (reply, "INVALID_TYPE");
+        return reply;
+    }
+    zmsg_addstr (reply, "LIST");
+    zmsg_addstr (reply, type);
+    zmsg_addstr (reply, ruleclass ? ruleclass : "");
+    rule_t *rule = (rule_t *) zhash_first (self->rules);
+    while (rule) {
+        zmsg_addstr (reply, rule_name (rule));
+        rule = (rule_t *) zhash_next (self->rules);
+    }
+    return reply;
+}
+
+//  --------------------------------------------------------------------------
+//  handling requests for getting rule.
+
+zmsg_t *
+flexible_alert_get_rule (flexible_alert_t *self, char *name)
+{
+    if (! self || !name) return NULL;
+    
+    rule_t *rule = (rule_t *) zhash_lookup (self->rules, name);
+    zmsg_t *reply = zmsg_new ();
+    if (rule) {
+        char *json = rule_json (rule);
+        zmsg_addstr (reply, "OK");
+        zmsg_addstr (reply, json);
+        zstr_free (&json);
+    } else {
+        zmsg_addstr (reply, "ERROR");
+        zmsg_addstr (reply, "NOT_FOUND");
+    }
+    return reply;
+}
+
+//  --------------------------------------------------------------------------
+//  handling requests for deleting rule.
+
+zmsg_t *
+flexible_alert_delete_rule (flexible_alert_t *self, const char *name, const char *dir)
+{
+    if (! self || !name || !dir) return NULL;
+    
+    zmsg_t *reply = zmsg_new ();
+    zmsg_addstr (reply, "DELETE");
+    zmsg_addstr (reply, name);
+    
+    rule_t *rule = (rule_t *) zhash_lookup (self->rules, name);
+    if (rule) {
+        char *path = zsys_sprintf ("%s/%s.rule", dir, name);
+        if (unlink (path) == 0) {
+            zmsg_addstr (reply, "OK");
+            zhash_delete (self->rules, name);
+        } else {
+            zsys_error ("Can't remove %s", path);
+            zmsg_addstr (reply, "ERROR");
+            zmsg_addstr (reply, "CAN_NOT_REMOVE");
+        }
+        zstr_free (&path);
+    } else {
+        zmsg_addstr (reply, "ERROR");
+        zmsg_addstr (reply, "DOES_NOT_EXISTS");
+    }
+    return reply;
+}
+
+//  --------------------------------------------------------------------------
+//  handling requests for adding rule.
+
+zmsg_t *
+flexible_alert_add_rule (flexible_alert_t *self, const char *json, const char *old_name, const char *dir)
+{
+    if (! self || !json || !dir) return NULL;
+
+    
+    rule_t *newrule = rule_new ();
+    zmsg_t *reply = zmsg_new ();
+    if(rule_parse (newrule, json) != 0) {
+        zmsg_addstr (reply, "ERROR");
+        zmsg_addstr (reply, "INVALID_JSON");
+        rule_destroy (&newrule);
+        return reply;
+    };
+    if (old_name) {
+        zsys_info ("deleting rule %s", old_name);
+        zmsg_t *msg = flexible_alert_delete_rule (self, old_name, dir);
+        zmsg_destroy (&msg);
+    }
+    rule_t *rule = (rule_t *) zhash_lookup (self->rules, rule_name (newrule));
+    if (rule) {
+        zsys_error ("Rule %s exists", rule_name (rule));
+        zmsg_addstr (reply, "ERROR");
+        zmsg_addstr (reply, "ALREADY_EXISTS");
+    } else {
+        char *path = zsys_sprintf ("%s/%s.rule", dir, rule_name(newrule));
+        int x = rule_save (newrule, path);
+        if ( x != 0) {
+            zsys_error ("Error while saving rule %s (%i)", path, x);
+            zmsg_addstr (reply, "ERROR");
+            zmsg_addstr (reply, "SAVE_FAILURE");
+        } else {
+            zmsg_addstr (reply, "OK");
+            zmsg_addstr (reply, json);
+            zsys_info ("Loading rule %s", path);
+            flexible_alert_load_one_rule (self, path);
+            zsys_info ("Loading rule %s done", path);
+        }
+        zstr_free (&path);
+    }
+    
+    rule_destroy (&newrule);
+    return reply;
+}
+
+//  --------------------------------------------------------------------------
 //  Actor running one instance of flexible alert class
 
 void
@@ -379,7 +516,8 @@ flexible_alert_actor (zsock_t *pipe, void *args)
     flexible_alert_t *self = flexible_alert_new ();
     assert (self);
     zsock_signal (pipe, 0);
-
+    char *ruledir = NULL;
+    
     zpoller_t *poller = zpoller_new (mlm_client_msgpipe(self->mlm), pipe, NULL);
     while (!zsys_interrupted) {
         void *which = zpoller_wait (poller, -1);
@@ -415,10 +553,10 @@ flexible_alert_actor (zsock_t *pipe, void *args)
                     zstr_free (&pattern);
                 }
                 else if (streq (cmd, "LOADRULES")) {
-                    char *dir = zmsg_popstr (msg);
-                    assert (dir);
-                    flexible_alert_load_rules (self, dir);
-                    zstr_free (&dir);
+                    zstr_free (&ruledir);
+                    ruledir = zmsg_popstr (msg);
+                    assert (ruledir);
+                    flexible_alert_load_rules (self, ruledir);
                 }
 
 
@@ -437,11 +575,62 @@ flexible_alert_actor (zsock_t *pipe, void *args)
                     flexible_alert_handle_metric (self, &fmsg);
                 }
                 fty_proto_destroy (&fmsg);
+            } else if (streq (mlm_client_command (self->mlm), "MAILBOX DELIVER")) {
+                // someone is addressing us directly
+                // protocol frames COMMAND/param1/param2
+                char *cmd = zmsg_popstr (msg);
+                char *p1 = zmsg_popstr (msg);
+                char *p2 = zmsg_popstr (msg);
+                zmsg_t *reply = NULL;
+                if (cmd) {
+                    if (streq (cmd, "LIST")) {
+                        // request: LIST/type/class
+                        // reply: LIST/type/class/name1/name2/...nameX
+                        // reply: ERROR/reason
+                        reply = flexible_alert_list_rules (self, p1, p2);
+                    }
+                    else if (streq (cmd, "GET")) {
+                        // request: GET/name
+                        // reply: OK/rulejson
+                        // reply: ERROR/reason
+                        reply = flexible_alert_get_rule (self, p1);
+                    }
+                    else if (streq (cmd, "ADD")) {
+                        // request: ADD/rulejson -- this is create
+                        // request: ADD/rulejson/rulename -- this is replace
+                        // reply: OK/rulejson                        
+                        // reply: ERROR/reason
+                        reply = flexible_alert_add_rule (self, p1, p2, ruledir);
+                    }
+                    else if (streq (cmd, "DELETE")) {
+                        // request: DELETE/name
+                        // reply: DELETE/name/OK
+                        // reply: DELETE/name/ERROR/reason
+                        reply = flexible_alert_delete_rule (self, p1, ruledir);
+                    }
+                }
+                if (reply) {
+                    mlm_client_sendto (
+                        self->mlm,
+                        mlm_client_sender (self->mlm),
+                        mlm_client_subject (self->mlm),
+                        mlm_client_tracker (self->mlm),
+                        1000,
+                        &reply
+                    );
+                    if (reply) {
+                        zsys_error ("Failed to send LIST reply to %s", mlm_client_sender (self->mlm));
+                        zmsg_destroy (&reply);
+                    }
+                }
+                zstr_free (&cmd);
+                zstr_free (&p1);
+                zstr_free (&p2);
             }
             zmsg_destroy (&msg);
         }
     }
-    
+    zstr_free (&ruledir);
     zpoller_destroy (&poller);
     flexible_alert_destroy (&self);
 }
@@ -452,7 +641,7 @@ flexible_alert_actor (zsock_t *pipe, void *args)
 void
 flexible_alert_test (bool verbose)
 {
-    printf (" * flexible_alert: ");
+    printf (" * flexible_alert:\n");
 
     //  @selftest
     //  Simple create/destroy test
@@ -504,6 +693,7 @@ flexible_alert_test (bool verbose)
     }
     zclock_sleep (200);
     {
+        printf ("\t#1 Create alert ");
         // send metric, receive alert
         zmsg_t *msg = fty_proto_encode_metric (
             NULL,
@@ -521,8 +711,103 @@ flexible_alert_test (bool verbose)
         fty_proto_print (ftymsg);
         fty_proto_destroy (&ftymsg);
         zmsg_destroy (&alert);
+        printf ("OK\n");
     }
     zclock_sleep (200);
+    {
+        // test LIST
+        printf ("\t#2 LIST ");
+        zmsg_t *msg = zmsg_new();
+        zmsg_addstr (msg, "LIST");
+        zmsg_addstr (msg, "all");
+        zmsg_addstr (msg, "myclass");
+        mlm_client_sendto (asset, "me", "status.ups@mydevice", NULL, 1000, &msg);
+        
+        zmsg_t *reply = mlm_client_recv (asset);
+        
+        char *item = zmsg_popstr (reply);
+        assert (streq ("LIST", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (streq ("all", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (streq ("myclass", item));
+        zstr_free (&item);
+
+        zmsg_destroy (&reply);
+        printf ("OK\n");
+    }
+    {
+        // test GET
+        printf ("\t#3 GET ");
+        zmsg_t *msg = zmsg_new();
+        zmsg_addstr (msg, "GET");
+        zmsg_addstr (msg, "load");
+        mlm_client_sendto (asset, "me", "ignored", NULL, 1000, &msg);
+        
+        zmsg_t *reply = mlm_client_recv (asset);
+        
+        char *item = zmsg_popstr (reply);
+        assert (streq ("OK", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (item && item[0] == '{');
+        zstr_free (&item);
+
+        zmsg_destroy (&reply);
+        printf ("OK\n");
+    }
+    {
+        // test ADD
+        printf ("\t#4 ADD ");
+        const char *testrulejson = "{\"name\":\"testrulejson\",\"description\":\"none\",\"evaluation\":\"function main(x) return OK, 'yes' end\"}";
+        zmsg_t *msg = zmsg_new();
+        zmsg_addstr (msg, "ADD");
+        zmsg_addstr (msg, testrulejson);
+        mlm_client_sendto (asset, "me", "ignored", NULL, 1000, &msg);
+        
+        zmsg_t *reply = mlm_client_recv (asset);
+        char *item = zmsg_popstr (reply);
+        assert (streq ("OK", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (item && item[0] == '{');
+        zstr_free (&item);
+
+        zmsg_destroy (&reply);
+        printf ("OK\n");
+    }
+    {
+        // test DELETE
+        printf ("   #3 DELETE ");
+
+        zmsg_t *msg = zmsg_new();
+        zmsg_addstr (msg, "DELETE");
+        zmsg_addstr (msg, "testrulejson");
+        mlm_client_sendto (asset, "me", "ignored", NULL, 1000, &msg);
+        
+        zmsg_t *reply = mlm_client_recv (asset);
+        
+        char *item = zmsg_popstr (reply);
+        assert (streq ("DELETE", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (streq ("testrulejson", item));
+        zstr_free (&item);
+
+        item = zmsg_popstr (reply);
+        assert (streq ("OK", item));
+        zstr_free (&item);
+
+        zmsg_destroy (&reply);
+        printf ("OK\n");
+    }
     mlm_client_destroy (&metric);
     mlm_client_destroy (&asset);
     // destroy actor

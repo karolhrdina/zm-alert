@@ -114,7 +114,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
     if (!data) return 1;
     
     rule_t *self = (rule_t *) data;
-
+    
     if (streq (locator, "name")) {
         self -> name = vsjson_decode_string (value);
     }
@@ -347,14 +347,15 @@ int rule_load (rule_t *self, const char *path)
 {
     int fd = open (path, O_RDONLY);
     if (fd == -1) return -1;
-
+    
     struct stat rstat;
-    fstat (fd, &rstat);
+    if (fstat (fd, &rstat) != 0) {
+        zsys_error ("can't stat file %s", path);
+    }
 
     int capacity = rstat.st_size + 1;
-    char *buffer = (char *) malloc (capacity);
+    char *buffer = (char *) zmalloc (capacity + 1);
     assert (buffer);
-    memset (buffer, 0, capacity);
 
     if (read (fd, buffer, capacity) == -1) {
         zsys_error ("Error while reading rule %s", path);
@@ -363,6 +364,26 @@ int rule_load (rule_t *self, const char *path)
     int result = rule_parse (self, buffer);
     free (buffer);
     return result;
+}
+
+//  --------------------------------------------------------------------------
+//  Save json rule to file
+
+int rule_save (rule_t *self, const char *path)
+{
+    int fd = open (path, O_WRONLY | O_CREAT | O_TRUNC,  S_IRUSR | S_IWUSR);
+    if (fd == -1) return -1;
+
+    char *json = rule_json (self);
+    if (! json) return -2;
+    if (write (fd, json, strlen(json)) == -1) {
+        zsys_error ("Error while writting rule %s", path);
+        zstr_free (&json);
+        return -3;
+    }
+    zstr_free (&json);
+    close (fd);
+    return 0;
 }
 
 static int rule_compile (rule_t *self)
@@ -568,7 +589,7 @@ rule_json (rule_t *self)
         zstr_free (&jname);
     }
     {
-        char *desc = vsjson_encode_string (self->description);
+        char *desc = vsjson_encode_string (self->description ? self->description : "");
         s_string_append (&json, &jsonsize, "\"description\":");
         s_string_append (&json, &jsonsize, desc);
         s_string_append (&json, &jsonsize, ",\n");

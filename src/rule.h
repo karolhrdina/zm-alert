@@ -96,6 +96,10 @@ FTY_ALERT_FLEXIBLE_PRIVATE zhashx_t *
 FTY_ALERT_FLEXIBLE_PRIVATE int
     rule_load (rule_t *self, const char *path);
 
+//  Save json rule to file
+FTY_ALERT_FLEXIBLE_PRIVATE int
+    rule_save (rule_t *self, const char *path);
+
 //  Convert rule back to json
 //  Caller is responsible for destroying the return value
 FTY_ALERT_FLEXIBLE_PRIVATE char *
