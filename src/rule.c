@@ -115,42 +115,46 @@ rule_json_callback (const char *locator, const char *value, void *data)
     
     rule_t *self = (rule_t *) data;
     
-    if (streq (locator, "name")) {
+    // incomming json can be encapsulated with { "flexible": ... } envelope
+    const char *mylocator = locator;
+    if (strncmp (locator, "flexible/",9) == 0) mylocator = &locator[9];
+    
+    if (streq (mylocator, "name")) {
         self -> name = vsjson_decode_string (value);
     }
-    else if (streq (locator, "description")) {
+    else if (streq (mylocator, "description")) {
         self -> description = vsjson_decode_string (value);
     }
-    else if (strncmp (locator, "metrics/", 7) == 0) {
+    else if (strncmp (mylocator, "metrics/", 7) == 0) {
         char *metric = vsjson_decode_string (value);
         zlist_append (self -> metrics, metric);
         zstr_free (&metric);
     }
-    else if (strncmp (locator, "assets/", 7) == 0) {
+    else if (strncmp (mylocator, "assets/", 7) == 0) {
         char *asset = vsjson_decode_string (value);
         zlist_append (self -> assets, asset);
         zstr_free (&asset);
     }
-    else if (strncmp (locator, "groups/", 7) == 0) {
+    else if (strncmp (mylocator, "groups/", 7) == 0) {
         char *group = vsjson_decode_string (value);
         zlist_append (self -> groups, group);
         zstr_free (&group);
     }
-    else if (strncmp (locator, "models/", 7) == 0) {
+    else if (strncmp (mylocator, "models/", 7) == 0) {
         char *model = vsjson_decode_string (value);
         if (model && strlen (model) > 0)
             zlist_append (self->models, model);
         zstr_free (&model);
     }
-    else if (strncmp (locator, "types/", 6) == 0) {
+    else if (strncmp (mylocator, "types/", 6) == 0) {
         char *type = vsjson_decode_string (value);
         if (type && strlen (type) > 0)
             zlist_append (self->types, type);
         zstr_free (&type);
     }
-    else if (strncmp (locator, "results/", 8) == 0) {
+    else if (strncmp (mylocator, "results/", 8) == 0) {
         // results/[0/]low_warning/action/0
-        char *end = strstr (locator, "/action/");
+        char *end = strstr (mylocator, "/action/");
         if (end) {
             char *start = end;
             --start;
@@ -165,14 +169,14 @@ rule_json_callback (const char *locator, const char *value, void *data)
             zstr_free (&action);
         }
     }
-    else if (streq (locator, "evaluation")) {
+    else if (streq (mylocator, "evaluation")) {
         self -> evaluation = vsjson_decode_string (value);
     }
     else
-    if (strncmp (locator, "variables/", 10) == 0)
+    if (strncmp (mylocator, "variables/", 10) == 0)
     {
         //  locator e.g. variables/low_critical
-        char *slash = strchr (locator, '/');
+        char *slash = strchr (mylocator, '/');
         if (!slash)
             return 0;
         slash = slash + 1;
