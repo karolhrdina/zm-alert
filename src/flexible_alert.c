@@ -400,7 +400,15 @@ flexible_alert_list_rules (flexible_alert_t *self, char *type, char *ruleclass)
     zmsg_addstr (reply, ruleclass ? ruleclass : "");
     rule_t *rule = (rule_t *) zhash_first (self->rules);
     while (rule) {
-        zmsg_addstr (reply, rule_name (rule));
+        char *json = rule_json (rule);
+        if (json) {
+            char *uistyle = zsys_sprintf ("{\"flexible\": %s }", json);
+            if (uistyle) {
+                zmsg_addstr (reply, uistyle);
+                zstr_free (&uistyle);
+            }
+            zstr_free (&json);
+        }
         rule = (rule_t *) zhash_next (self->rules);
     }
     return reply;
