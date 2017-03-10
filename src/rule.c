@@ -644,7 +644,7 @@ rule_json (rule_t *self)
             }
             char *key = vsjson_encode_string (zhash_cursor (self->result_actions));
             s_string_append (&json, &jsonsize, key);
-            s_string_append (&json, &jsonsize, ": {\"actions\":");
+            s_string_append (&json, &jsonsize, ": {\"action\":");
             char *array = s_actions_to_json_array ( (const char *)result);
             s_string_append (&json, &jsonsize, array);
             s_string_append (&json, &jsonsize, "}");
@@ -796,9 +796,12 @@ rule_test (bool verbose)
         char *json = rule_json (self);
         rule_t *rule = rule_new ();
         rule_parse (rule, json);
+        char *json2 = rule_json (rule);
         assert (streq (rule_name(rule), rule_name (self)));
+        assert (streq (json,json2));
         rule_destroy (&rule);
         zstr_free (&json);
+        zstr_free (&json2);
         rule_destroy (&self);
         printf ("      OK\n");
     }
