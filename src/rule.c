@@ -93,7 +93,8 @@ rule_new (void)
 //  Add rule result action
 void rule_add_result_action (rule_t *self, const char *result, const char *action)
 {
-    if (!self || !result || !action) return;
+    if (!self || !result) return;
+    if (!action) action = "(null)";
     
     char *item = (char *) zhash_lookup (self->result_actions, result);
     if (item) {
@@ -120,24 +121,26 @@ rule_json_callback (const char *locator, const char *value, void *data)
     if (strncmp (locator, "flexible/",9) == 0) mylocator = &locator[9];
     
     if (streq (mylocator, "name")) {
+        zstr_free (&self -> name);
         self -> name = vsjson_decode_string (value);
     }
     else if (streq (mylocator, "description")) {
+        zstr_free (&self -> description);
         self -> description = vsjson_decode_string (value);
     }
     else if (strncmp (mylocator, "metrics/", 7) == 0) {
         char *metric = vsjson_decode_string (value);
-        zlist_append (self -> metrics, metric);
+        if (metric) zlist_append (self -> metrics, metric);
         zstr_free (&metric);
     }
     else if (strncmp (mylocator, "assets/", 7) == 0) {
         char *asset = vsjson_decode_string (value);
-        zlist_append (self -> assets, asset);
+        if (asset) zlist_append (self -> assets, asset);
         zstr_free (&asset);
     }
     else if (strncmp (mylocator, "groups/", 7) == 0) {
         char *group = vsjson_decode_string (value);
-        zlist_append (self -> groups, group);
+        if (group) zlist_append (self -> groups, group);
         zstr_free (&group);
     }
     else if (strncmp (mylocator, "models/", 7) == 0) {
@@ -154,7 +157,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
     }
     else if (strncmp (mylocator, "results/", 8) == 0) {
         // results/[0/]low_warning/action/0
-        char *end = strstr (mylocator, "/action/");
+        char *end = strstr (mylocator, "/action");
         if (end) {
             char *start = end;
             --start;
@@ -170,6 +173,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
         }
     }
     else if (streq (mylocator, "evaluation")) {
+        zstr_free (&self -> evaluation);
         self -> evaluation = vsjson_decode_string (value);
     }
     else
@@ -197,7 +201,7 @@ rule_json_callback (const char *locator, const char *value, void *data)
 
 int rule_parse (rule_t *self, const char *json)
 {
-    return vsjson_parse (json, rule_json_callback, self);
+    return vsjson_parse (json, rule_json_callback, self, true);
 }
 
 //  --------------------------------------------------------------------------
@@ -554,16 +558,20 @@ static char * s_actions_to_json_array (const char *actions)
         char *end = strchr (start, '/');
         if (end) {
             *end = 0;
-            char *action = vsjson_encode_string (start);
-            s_string_append (&array, &capacity, action);
-            s_string_append (&array, &capacity, ", ");
-            zstr_free (&action);
+            if (! streq (start, "(null)")) {
+                char *action = vsjson_encode_string (start);
+                s_string_append (&array, &capacity, action);
+                s_string_append (&array, &capacity, ", ");
+                zstr_free (&action);
+            }
             start = end;
             ++start;
         } else {
-            char *action = vsjson_encode_string (start);
-            s_string_append (&array, &capacity, action);
-            zstr_free (&action);
+            if (! streq (start, "(null)")) {
+                char *action = vsjson_encode_string (start);
+                s_string_append (&array, &capacity, action);
+                zstr_free (&action);
+            }
             start = NULL;
         }
     }

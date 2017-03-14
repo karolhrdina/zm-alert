@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 #define VSJSON_SEPARATOR '/'
+#include <stdbool.h>
 
 typedef struct _vsjson_t vsjson_t;
 typedef int (vsjson_callback_t)(const char *locator, const char *value, void *data);
@@ -46,9 +47,9 @@ const char* vsjson_first_token (vsjson_t *self);
 //     vsjson_destroy (&parser);
 const char* vsjson_next_token (vsjson_t *self);
 
-int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data);
+int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data, bool callWhenEmpty);
 
-int vsjson_parse (const char *json, vsjson_callback_t *func, void *data);
+int vsjson_parse (const char *json, vsjson_callback_t *func, void *data, bool callWhenEmpty);
 
 char *vsjson_decode_string (const char *string);
 
