@@ -226,11 +226,12 @@ void vsjson_destroy (vsjson_t **self_p)
     *self_p = NULL;
 }
 
-int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data);
+int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data, bool callWhenEmpty);
 
-int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data)
+int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data, bool callWhenEmpty)
 {
     int result = 0;
+    int itemscount = 0;
     char *locator = NULL;
     char *key = NULL;
 
@@ -239,9 +240,13 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
         // token should be key or }
         switch (token[0]) {
         case '}':
+            if (itemscount == 0 && callWhenEmpty) {
+                result = func (&prefix[1], NULL, data);
+            }
             goto cleanup;
         case '"':
             key = vsjson_decode_string (token);
+            ++itemscount;
             token = vsjson_next_token (self);
             if (strcmp (token, ":") != 0) {
                 result = -1;
@@ -261,11 +266,11 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
             snprintf(locator, s, "%s%c%s", prefix, VSJSON_SEPARATOR, key);
             switch (token[0]) {
             case '{':
-                result = _vsjson_walk_object (self, locator, func, data);
+                result = _vsjson_walk_object (self, locator, func, data, callWhenEmpty);
                 if (result != 0) goto cleanup;
                 break;
             case '[':
-                result = _vsjson_walk_array (self, locator, func, data);
+                result = _vsjson_walk_array (self, locator, func, data, callWhenEmpty);
                 if (result != 0) goto cleanup;
                 break;
             case ':':
@@ -317,7 +322,7 @@ int _vsjson_walk_object (vsjson_t *self, const char *prefix, vsjson_callback_t *
     return result;
 }
 
-int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data)
+int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *func, void *data, bool callWhenEmpty)
 {
     int index = 0;
     int result = 0;
@@ -335,6 +340,9 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
         // token should be value or ]
         switch (token[0]) {
         case ']':
+            if (index == 0 && callWhenEmpty) {
+                result = func (&prefix[1], NULL, data);                
+            }
             goto cleanup;
         case ':':
         case ',':
@@ -342,11 +350,11 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
             result = -1;
             goto cleanup;
         case '{':
-            result = _vsjson_walk_object (self, locator, func, data);
+            result = _vsjson_walk_object (self, locator, func, data, callWhenEmpty);
             if (result != 0) goto cleanup;
             break;
         case '[':
-            result = _vsjson_walk_array (self, locator, func, data);
+            result = _vsjson_walk_array (self, locator, func, data, callWhenEmpty);
             if (result != 0) goto cleanup;
             break;
         default:
@@ -384,7 +392,7 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
     return result;
 }
 
-int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data)
+int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data, bool callWhenEmpty)
 {
     if (!self || !func) return -1;
 
@@ -394,10 +402,10 @@ int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data)
     if (token) {
         switch (token[0]) {
         case '{':
-            result = _vsjson_walk_object (self, "", func, data);
+            result = _vsjson_walk_object (self, "", func, data, callWhenEmpty);
             break;
         case '[':
-            result = _vsjson_walk_array (self, "", func, data);
+            result = _vsjson_walk_array (self, "", func, data, callWhenEmpty);
             break;
         default:
             // this is simple json containing just string, number ...
@@ -541,11 +549,11 @@ char *vsjson_encode_string (const char *string)
     return encoded;
 }
 
-int vsjson_parse (const char *json, vsjson_callback_t *func, void *data)
+int vsjson_parse (const char *json, vsjson_callback_t *func, void *data, bool callWhenEmpty)
 {
     if (!json || !func) return -1;
     vsjson_t *v = vsjson_new (json);
-    int r = vsjson_walk_trough (v, func, data);
+    int r = vsjson_walk_trough (v, func, data, callWhenEmpty);
     vsjson_destroy (&v);
     return r;
 }
