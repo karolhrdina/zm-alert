@@ -351,15 +351,18 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
             goto cleanup;
         case '{':
             result = _vsjson_walk_object (self, locator, func, data, callWhenEmpty);
+            ++index;
             if (result != 0) goto cleanup;
             break;
         case '[':
             result = _vsjson_walk_array (self, locator, func, data, callWhenEmpty);
+            ++index;
             if (result != 0) goto cleanup;
             break;
         default:
             if (vsjson_is_token_valid (self)) {
                 result = func (&locator[1], token, data);
+                ++index;
             } else {
                 result = -3;
             }
@@ -378,7 +381,6 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
         switch (token[0]) {
         case ',':
             token = vsjson_next_token (self);
-            ++index;
             break;
         case ']':
             break;
