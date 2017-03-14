@@ -451,6 +451,7 @@ char *vsjson_decode_string (const char *string)
             case '"':
                 *dst = *src;
                 ++dst;
+                break;
             case 'b':
                 *dst = '\b';
                 ++dst;
