@@ -28,7 +28,11 @@ extern "C" {
 
 #define RULE_ERROR 255
 
+//  Opaque class structures to allow forward references
+#ifndef RULE_T_DEFINED
 typedef struct _rule_t rule_t;
+#define RULE_T_DEFINED
+#endif
 
 //  @interface
 //  Create a new rule
