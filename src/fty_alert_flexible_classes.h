@@ -32,6 +32,22 @@
 //  External API
 #include "../include/fty_alert_flexible.h"
 
+//  Extra headers
+
+//  Opaque class structures to allow forward references
+#ifndef RULE_T_DEFINED
+typedef struct _rule_t rule_t;
+#define RULE_T_DEFINED
+#endif
+#ifndef VSJSON_T_DEFINED
+typedef struct _vsjson_t vsjson_t;
+#define VSJSON_T_DEFINED
+#endif
+#ifndef METRICS_T_DEFINED
+typedef struct _metrics_t metrics_t;
+#define METRICS_T_DEFINED
+#endif
+
 //  Internal API
 #include "rule.h"
 #include "vsjson.h"
