@@ -116,15 +116,15 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %{_bindir}/fty-alert-flexible
 %{_mandir}/man1/fty-alert-flexible*
 %config(noreplace) %{_sysconfdir}/fty-alert-flexible/fty-alert-flexible.cfg
-/usr/lib/systemd/system/fty-alert-flexible{,@*}.{service,*}
+/usr/lib/systemd/system/fty-alert-flexible.service
 %dir %{_sysconfdir}/fty-alert-flexible
 %if 0%{?suse_version} > 1315
 %post
-%systemd_post fty-alert-flexible{,@*}.{service,*}
+%systemd_post fty-alert-flexible.service
 %preun
-%systemd_preun fty-alert-flexible{,@*}.{service,*}
+%systemd_preun fty-alert-flexible.service
 %postun
-%systemd_postun_with_restart fty-alert-flexible{,@*}.{service,*}
+%systemd_postun_with_restart fty-alert-flexible.service
 %endif
 
 %changelog

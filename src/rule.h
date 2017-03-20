@@ -28,7 +28,11 @@ extern "C" {
 
 #define RULE_ERROR 255
 
+//  Opaque class structures to allow forward references
+#ifndef RULE_T_DEFINED
 typedef struct _rule_t rule_t;
+#define RULE_T_DEFINED
+#endif
 
 //  @interface
 //  Create a new rule
@@ -63,7 +67,7 @@ FTY_ALERT_FLEXIBLE_PRIVATE bool
 FTY_ALERT_FLEXIBLE_PRIVATE bool
     rule_group_exists (rule_t *self, const char *group);
 
-//  Does rule contain this metric? 
+//  Does rule contain this metric?
 FTY_ALERT_FLEXIBLE_PRIVATE bool
     rule_metric_exists (rule_t *self, const char *metric);
 

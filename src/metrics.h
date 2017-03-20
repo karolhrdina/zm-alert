@@ -26,7 +26,11 @@
 extern "C" {
 #endif
 
+//  Opaque class structures to allow forward references
+#ifndef METRICS_T_DEFINED
 typedef struct _metrics_t metrics_t;
+#define METRICS_T_DEFINED
+#endif
 
 //  @interface
 //  Create a new metrics
