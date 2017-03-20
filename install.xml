@@ -11,11 +11,11 @@ Installation model
 
 <install>
     <item type = "systemd-tmpfiles" />
-    
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts-voltage.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts-frequency.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/sts-preferred-source.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/load.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/ups.rule" />
-    <item path = "/usr/share/fty-alert-flexible/rules" name = "../rules/threshold.rule" />
+
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/sts-voltage.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/sts-frequency.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/sts-preferred-source.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/load.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/ups.rule" />
+    <item path = "/usr/share/fty-alert-flexible/rules" name = "../src/selftest-ro/rules/threshold.rule" />
 </install>
