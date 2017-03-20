@@ -9,7 +9,7 @@
 
     <target name = "debian" />
     <target name = "redhat" />
-    <target name = "travis" travis_distcheck="0" />
+    <target name = "travis" />
 
     <use project = "czmq" min_major = "3" release = "v3.0.2"
         repository="https://github.com/42ity/czmq.git"/>

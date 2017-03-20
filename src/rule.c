@@ -738,6 +738,18 @@ rule_test (bool verbose)
 {
     printf (" * rule: \n");
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+    char *rule_file = NULL;
+
     //  @selftest
     //  Simple create/destroy test
     {
@@ -754,7 +766,10 @@ rule_test (bool verbose)
         printf ("      Load test #1 ... ");
         rule_t *self = rule_new ();
         assert (self);
-        rule_load (self, "./rules/load.rule");
+        rule_file = zsys_sprintf ("%s/rules/%s", SELFTEST_DIR_RO, "load.rule");
+        assert (rule_file);
+        rule_load (self, rule_file);
+        zstr_free (&rule_file);
         rule_destroy (&self);
         assert (self == NULL);
         printf ("      OK\n");
@@ -765,7 +780,11 @@ rule_test (bool verbose)
         printf ("      Load test #2 - 'variables' section ... ");
         rule_t *self = rule_new ();
         assert (self);
-        rule_load (self, "./rules/threshold.rule");
+        rule_file = zsys_sprintf ("%s/rules/%s", SELFTEST_DIR_RO, "threshold.rule");
+        assert (rule_file);
+        rule_load (self, rule_file);
+        zstr_free (&rule_file);
+
         //  prepare expected 'variables' hash
         zhashx_t *expected = zhashx_new ();
         assert (expected);
@@ -799,7 +818,10 @@ rule_test (bool verbose)
         printf ("      Load test #3 - json construction test ... ");
         rule_t *self = rule_new ();
         assert (self);
-        rule_load (self, "./rules/load.rule");
+        rule_file = zsys_sprintf ("%s/rules/%s", SELFTEST_DIR_RO, "load.rule");
+        assert (rule_file);
+        rule_load (self, rule_file);
+        zstr_free (&rule_file);
         // test rule to json
         char *json = rule_json (self);
         rule_t *rule = rule_new ();

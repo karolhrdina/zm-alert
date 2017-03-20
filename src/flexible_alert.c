@@ -651,6 +651,17 @@ flexible_alert_test (bool verbose)
 {
     printf (" * flexible_alert:\n");
 
+    // Note: If your selftest reads SCMed fixture data, please keep it in
+    // src/selftest-ro; if your test creates filesystem objects, please
+    // do so under src/selftest-rw. They are defined below along with a
+    // usecase (asert) to make compilers happy.
+    const char *SELFTEST_DIR_RO = "src/selftest-ro";
+    const char *SELFTEST_DIR_RW = "src/selftest-rw";
+    assert (SELFTEST_DIR_RO);
+    assert (SELFTEST_DIR_RW);
+    // std::string str_SELFTEST_DIR_RO = std::string(SELFTEST_DIR_RO);
+    // std::string str_SELFTEST_DIR_RW = std::string(SELFTEST_DIR_RW);
+
     //  @selftest
     //  Simple create/destroy test
     flexible_alert_t *self = flexible_alert_new ();
@@ -670,7 +681,10 @@ flexible_alert_test (bool verbose)
     zstr_sendx (fs, "PRODUCER", FTY_PROTO_STREAM_ALERTS_SYS, NULL);
     zstr_sendx (fs, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (fs, "CONSUMER", FTY_PROTO_STREAM_METRICS, ".*", NULL);
-    zstr_sendx (fs, "LOADRULES", "./rules", NULL);
+    char *rules_dir = zsys_sprintf ("%s/rules", SELFTEST_DIR_RO);
+    assert (rules_dir != NULL);
+    zstr_sendx (fs, "LOADRULES", rules_dir, NULL);
+    zstr_free (&rules_dir);
 
     // create mlm client for interaction with actor
     mlm_client_t *asset = mlm_client_new ();
@@ -773,6 +787,11 @@ flexible_alert_test (bool verbose)
         // test ADD
         printf ("\t#4 ADD ");
         const char *testrulejson = "{\"name\":\"testrulejson\",\"description\":\"none\",\"evaluation\":\"function main(x) return OK, 'yes' end\"}";
+
+        // For ADD and DELETE tests use the RW directory
+        zstr_sendx (fs, "LOADRULES", SELFTEST_DIR_RW, NULL);
+        zclock_sleep (200);
+
         zmsg_t *msg = zmsg_new();
         zmsg_addstr (msg, "ADD");
         zmsg_addstr (msg, testrulejson);
