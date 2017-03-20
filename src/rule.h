@@ -67,7 +67,7 @@ FTY_ALERT_FLEXIBLE_PRIVATE bool
 FTY_ALERT_FLEXIBLE_PRIVATE bool
     rule_group_exists (rule_t *self, const char *group);
 
-//  Does rule contain this metric? 
+//  Does rule contain this metric?
 FTY_ALERT_FLEXIBLE_PRIVATE bool
     rule_metric_exists (rule_t *self, const char *metric);
 

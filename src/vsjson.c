@@ -31,7 +31,7 @@ vsjson_t *vsjson_new (const char *json)
     if (!json) return NULL;
     vsjson_t *self = (vsjson_t *) malloc (sizeof (vsjson_t));
     if (!self) return NULL;
-    
+
     memset(self, 0, sizeof(vsjson_t));
     self->text = strdup (json);
     return self;
@@ -40,7 +40,7 @@ vsjson_t *vsjson_new (const char *json)
 const char *_vsjson_set_token (vsjson_t *self, const char *ptr, size_t len)
 {
     if (!ptr || !self) return NULL;
-    
+
     if (!len) len = strlen (ptr);
     if (self->tokensize > len + 1) {
         // fits in
@@ -64,7 +64,7 @@ const char *_vsjson_set_token (vsjson_t *self, const char *ptr, size_t len)
 const char* _vsjson_seek_to_next_token(vsjson_t *self)
 {
     if (!self) return NULL;
-    
+
     while (true) {
         if (self->cursor == NULL) return NULL;
         if (! isspace (self->cursor[0])) return self->cursor;
@@ -75,7 +75,7 @@ const char* _vsjson_seek_to_next_token(vsjson_t *self)
 const char* _vsjson_find_next_token(vsjson_t *self, const char *start)
 {
     if (!self) return NULL;
-    
+
     const char *p = start;
     if (!start) p = self->text;
     while (true) {
@@ -341,7 +341,7 @@ int _vsjson_walk_array (vsjson_t *self, const char *prefix, vsjson_callback_t *f
         switch (token[0]) {
         case ']':
             if (index == 0 && callWhenEmpty) {
-                result = func (&prefix[1], NULL, data);                
+                result = func (&prefix[1], NULL, data);
             }
             goto cleanup;
         case ':':
@@ -399,7 +399,7 @@ int vsjson_walk_trough (vsjson_t *self, vsjson_callback_t *func, void *data, boo
     if (!self || !func) return -1;
 
     int result = 0;
-    
+
     const char *token = vsjson_first_token (self);
     if (token) {
         switch (token[0]) {
@@ -436,7 +436,7 @@ char *vsjson_decode_string (const char *string)
     memset (decoded, 0, strlen (string));
     const char *src = string;
     char *dst = decoded;
-    
+
     if (string[0] != '"' || string[strlen (string)-1] != '"') {
         // no quotes, this is not json string
         free (decoded);

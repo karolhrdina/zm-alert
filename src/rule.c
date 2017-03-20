@@ -81,7 +81,7 @@ rule_new (void)
     zlist_comparefn (self -> types, string_comparefn);
     self -> result_actions = zhash_new ();
     zhash_autofree (self -> result_actions);
-    //  variables 
+    //  variables
     self->variables = zhashx_new ();
     zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
     zhashx_set_destructor (self->variables, (zhashx_destructor_fn *) zstr_free);
@@ -95,7 +95,7 @@ void rule_add_result_action (rule_t *self, const char *result, const char *actio
 {
     if (!self || !result) return;
     if (!action) action = "(null)";
-    
+
     char *item = (char *) zhash_lookup (self->result_actions, result);
     if (item) {
         char *newitem = zsys_sprintf ("%s/%s", item, action);
@@ -113,13 +113,13 @@ static int
 rule_json_callback (const char *locator, const char *value, void *data)
 {
     if (!data) return 1;
-    
+
     rule_t *self = (rule_t *) data;
-    
+
     // incomming json can be encapsulated with { "flexible": ... } envelope
     const char *mylocator = locator;
     if (strncmp (locator, "flexible/",9) == 0) mylocator = &locator[9];
-    
+
     if (streq (mylocator, "name")) {
         zstr_free (&self -> name);
         self -> name = vsjson_decode_string (value);
@@ -191,8 +191,8 @@ rule_json_callback (const char *locator, const char *value, void *data)
         }
         zhashx_insert (self->variables, slash, variable_value);
         zstr_free (&variable_value);
-    } 
-    
+    }
+
     return 0;
 }
 
@@ -241,7 +241,7 @@ rule_group_exists (rule_t *self, const char *group)
 
 
 //  --------------------------------------------------------------------------
-//  Does rule contain this metric? 
+//  Does rule contain this metric?
 
 bool
 rule_metric_exists (rule_t *self, const char *metric)
@@ -355,7 +355,7 @@ int rule_load (rule_t *self, const char *path)
 {
     int fd = open (path, O_RDONLY);
     if (fd == -1) return -1;
-    
+
     struct stat rstat;
     if (fstat (fd, &rstat) != 0) {
         zsys_error ("can't stat file %s", path);
@@ -448,7 +448,7 @@ static int rule_compile (rule_t *self)
     }
 
     return 1;
-}    
+}
 
 
 //  --------------------------------------------------------------------------
@@ -458,7 +458,7 @@ void
 rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message)
 {
     if (!self || !params || !name || !result || !message) return;
-    
+
     *result = RULE_ERROR;
     *message = NULL;
     if (!self -> lua) {
@@ -496,7 +496,7 @@ static char * s_string_append (char **string_p, size_t *capacity, const char *ap
 {
     if (! string_p) return NULL;
     if (! append) return *string_p;
-    
+
     char *string = *string_p;
     if (!string) {
         string = (char *) zmalloc (512);
@@ -589,7 +589,7 @@ char *
 rule_json (rule_t *self)
 {
     if (!self) return NULL;
-    
+
     char *json = NULL;
     size_t jsonsize = 0;
     {
@@ -609,35 +609,35 @@ rule_json (rule_t *self)
     }
     {
         //metrics
-        char *tmp = s_zlist_to_json_array (self->metrics); 
+        char *tmp = s_zlist_to_json_array (self->metrics);
         s_string_append (&json, &jsonsize, "\"metrics\":");
         s_string_append (&json, &jsonsize, tmp);
         s_string_append (&json, &jsonsize, ",\n");
-        zstr_free (&tmp); 
+        zstr_free (&tmp);
     }
     {
         //assets
-        char *tmp = s_zlist_to_json_array (self->assets); 
+        char *tmp = s_zlist_to_json_array (self->assets);
         s_string_append (&json, &jsonsize, "\"assets\":");
         s_string_append (&json, &jsonsize, tmp);
         s_string_append (&json, &jsonsize, ",\n");
-        zstr_free (&tmp); 
+        zstr_free (&tmp);
     }
     {
         //models
-        char *tmp = s_zlist_to_json_array (self->models); 
+        char *tmp = s_zlist_to_json_array (self->models);
         s_string_append (&json, &jsonsize, "\"models\":");
         s_string_append (&json, &jsonsize, tmp);
         s_string_append (&json, &jsonsize, ",\n");
-        zstr_free (&tmp); 
+        zstr_free (&tmp);
     }
     {
         //groups
-        char *tmp = s_zlist_to_json_array (self->groups); 
+        char *tmp = s_zlist_to_json_array (self->groups);
         s_string_append (&json, &jsonsize, "\"groups\":");
         s_string_append (&json, &jsonsize, tmp);
         s_string_append (&json, &jsonsize, ",\n");
-        zstr_free (&tmp); 
+        zstr_free (&tmp);
     }
     {
         //results
@@ -678,7 +678,7 @@ rule_json (rule_t *self)
                 char *value = vsjson_encode_string (item);
                 s_string_append (&json, &jsonsize, key);
                 s_string_append (&json, &jsonsize, ":");
-                s_string_append (&json, &jsonsize, value);                
+                s_string_append (&json, &jsonsize, value);
                 zstr_free (&key);
                 zstr_free (&value);
                 item = (char *) zhashx_next (self->variables);
@@ -754,7 +754,7 @@ rule_test (bool verbose)
         printf ("      Load test #1 ... ");
         rule_t *self = rule_new ();
         assert (self);
-        rule_load (self, "./rules/load.rule"); 
+        rule_load (self, "./rules/load.rule");
         rule_destroy (&self);
         assert (self == NULL);
         printf ("      OK\n");
@@ -766,7 +766,7 @@ rule_test (bool verbose)
         rule_t *self = rule_new ();
         assert (self);
         rule_load (self, "./rules/threshold.rule");
-        //  prepare expected 'variables' hash 
+        //  prepare expected 'variables' hash
         zhashx_t *expected = zhashx_new ();
         assert (expected);
         zhashx_set_duplicator (self->variables, (zhashx_duplicator_fn *) strdup);
@@ -793,13 +793,13 @@ rule_test (bool verbose)
         assert (self == NULL);
         printf ("      OK\n");
     }
-    
-    //  Load test #3 - json construction test 
-    { 
+
+    //  Load test #3 - json construction test
+    {
         printf ("      Load test #3 - json construction test ... ");
         rule_t *self = rule_new ();
         assert (self);
-        rule_load (self, "./rules/load.rule"); 
+        rule_load (self, "./rules/load.rule");
         // test rule to json
         char *json = rule_json (self);
         rule_t *rule = rule_new ();

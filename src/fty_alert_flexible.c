@@ -39,7 +39,7 @@ int main (int argc, char *argv [])
     for (argn = 1; argn < argc; argn++) {
         const char *param = NULL;
         if (argn < argc - 1) param = argv [argn+1];
-        
+
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
             puts ("fty-alert-flexible [options] ...");
