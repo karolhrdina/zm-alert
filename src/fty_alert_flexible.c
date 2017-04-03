@@ -21,7 +21,7 @@
 
 /*
 @header
-    fty_alert_flexible - 
+    fty_alert_flexible - agent for creating / evaluating alerts
 @discuss
 @end
 */
