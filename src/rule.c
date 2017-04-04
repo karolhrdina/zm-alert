@@ -1,21 +1,21 @@
 /*  =========================================================================
     rule - class representing one rule
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -455,17 +455,19 @@ static int rule_compile (rule_t *self)
 //  Evaluate rule
 
 void
-rule_evaluate (rule_t *self, zlist_t *params, const char *name, int *result, char **message)
+rule_evaluate (rule_t *self, zlist_t *params, const char *iname, const char *ename, int *result, char **message)
 {
-    if (!self || !params || !name || !result || !message) return;
+    if (!self || !params || !iname || !result || !message) return;
 
     *result = RULE_ERROR;
     *message = NULL;
     if (!self -> lua) {
         if (! rule_compile (self)) return;
     }
-    lua_pushstring(self -> lua, name);
+    lua_pushstring(self -> lua, ename ? ename : iname);
     lua_setglobal(self -> lua, "NAME");
+    lua_pushstring(self -> lua, iname);
+    lua_setglobal(self -> lua, "INAME");
     lua_settop (self->lua, 0);
     lua_getglobal (self->lua, "main");
     char *value = (char *) zlist_first (params);
