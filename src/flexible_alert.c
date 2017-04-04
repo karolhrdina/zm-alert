@@ -1,21 +1,21 @@
 /*  =========================================================================
     flexible_alert - Main class for evaluating alerts
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -34,6 +34,7 @@ struct _flexible_alert_t {
     zhash_t *rules;
     zhash_t *assets;
     zhash_t *metrics;
+    zhash_t *enames;
     mlm_client_t *mlm;
 };
 
@@ -60,6 +61,11 @@ void ftymsg_freefn (void *ptr)
     fty_proto_destroy (&fty);
 }
 
+static void ename_freefn (void *ename)
+{
+    if (ename) free (ename);
+}
+
 //  --------------------------------------------------------------------------
 //  Create a new flexible_alert
 
@@ -72,6 +78,8 @@ flexible_alert_new (void)
     self->rules = zhash_new ();
     self->assets = zhash_new ();
     self->metrics = zhash_new ();
+    self->enames = zhash_new ();
+    zhash_autofree (self->enames);
     self->mlm = mlm_client_new ();
     return self;
 }
@@ -89,6 +97,7 @@ flexible_alert_destroy (flexible_alert_t **self_p)
         zhash_destroy (&self->rules);
         zhash_destroy (&self->assets);
         zhash_destroy (&self->metrics);
+        zhash_destroy (&self->enames);
         mlm_client_destroy (&self->mlm);
         //  Free object itself
         free (self);
@@ -174,7 +183,7 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
 
 
 void
-flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *assetname)
+flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *assetname, const char *ename)
 {
     zlist_t *params = zlist_new ();
     zlist_autofree (params);
@@ -204,7 +213,7 @@ flexible_alert_evaluate (flexible_alert_t *self, rule_t *rule, const char *asset
     char *message;
     int result;
 
-    rule_evaluate (rule, params, assetname, &result, &message);
+    rule_evaluate (rule, params, assetname, ename, &result, &message);
     if (result != RULE_ERROR);
     flexible_alert_send_alert (
         self,
@@ -253,6 +262,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
     const char *assetname = fty_proto_name (ftymsg);
     const char *quantity = fty_proto_type (ftymsg);
     const char *description = fty_proto_aux_string (ftymsg, "description", "");
+    const char *ename = (const char *) zhash_lookup (self->enames, assetname);
 
     // produce nagios style alerts
     if (strncmp (quantity, "nagios.", 7) == 0 && strlen (description)) {
@@ -291,7 +301,7 @@ flexible_alert_handle_metric (flexible_alert_t *self, fty_proto_t **ftymsg_p)
                 metric_saved = true;
             }
             // evaluate
-            flexible_alert_evaluate (self, rule, assetname);
+            flexible_alert_evaluate (self, rule, assetname, ename);
         }
         func = (char *) zlist_next (functions_for_asset);
     }
@@ -354,6 +364,9 @@ flexible_alert_handle_asset (flexible_alert_t *self, fty_proto_t *ftymsg)
         if (zhash_lookup (self->assets, assetname)) {
             zhash_delete (self->assets, assetname);
         }
+        if (zhash_lookup (self->enames, assetname)) {
+            zhash_delete (self->enames, assetname);
+        }
         return;
     }
     if (streq (operation, "update")) {
@@ -376,6 +389,11 @@ flexible_alert_handle_asset (flexible_alert_t *self, fty_proto_t *ftymsg)
         }
         zhash_update (self->assets, assetname, functions_for_asset);
         zhash_freefn (self->assets, assetname, asset_freefn);
+        const char *ename = fty_proto_ext_string (ftymsg, "name", NULL);
+        if (ename) {
+            zhash_update (self->enames, assetname, (void *)ename);
+            zhash_freefn (self->enames, assetname, ename_freefn);
+        }
     }
 }
 
@@ -703,6 +721,7 @@ flexible_alert_test (bool verbose)
         zhash_t *ext = zhash_new();
         zhash_autofree (ext);
         zhash_insert (ext, "group.1", "all-upses");
+        zhash_insert (ext, "name", "mý děvíce");
         zmsg_t *assetmsg = fty_proto_encode_asset (
             NULL,
             "mydevice",

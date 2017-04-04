@@ -88,7 +88,8 @@ HIGH_CRITICAL.
 
 ### other variables
 
-* NAME -- name of currently evaluated asset
+* NAME -- friendly name of currently evaluated asset
+* INAME -- internal name of the asset (id)
 
 ## nagios metrics/alerts
 
