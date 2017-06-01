@@ -1,5 +1,5 @@
 /*  =========================================================================
-    fty-alert-flexible - generated layer of public API
+    zm-alert - generated layer of public API
 
     Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
@@ -24,48 +24,48 @@
     =========================================================================
 */
 
-#ifndef FTY_ALERT_FLEXIBLE_LIBRARY_H_INCLUDED
-#define FTY_ALERT_FLEXIBLE_LIBRARY_H_INCLUDED
+#ifndef ZM_ALERT_LIBRARY_H_INCLUDED
+#define ZM_ALERT_LIBRARY_H_INCLUDED
 
 //  Set up environment for the application
 
 //  External dependencies
 #include <czmq.h>
 #include <malamute.h>
-#include <ftyproto.h>
+#include <zmproto.h>
 #include <lua.h>
 
-//  FTY_ALERT_FLEXIBLE version macros for compile-time API detection
-#define FTY_ALERT_FLEXIBLE_VERSION_MAJOR 0
-#define FTY_ALERT_FLEXIBLE_VERSION_MINOR 1
-#define FTY_ALERT_FLEXIBLE_VERSION_PATCH 0
+//  ZM_ALERT version macros for compile-time API detection
+#define ZM_ALERT_VERSION_MAJOR 0
+#define ZM_ALERT_VERSION_MINOR 1
+#define ZM_ALERT_VERSION_PATCH 0
 
-#define FTY_ALERT_FLEXIBLE_MAKE_VERSION(major, minor, patch) \
+#define ZM_ALERT_MAKE_VERSION(major, minor, patch) \
     ((major) * 10000 + (minor) * 100 + (patch))
-#define FTY_ALERT_FLEXIBLE_VERSION \
-    FTY_ALERT_FLEXIBLE_MAKE_VERSION(FTY_ALERT_FLEXIBLE_VERSION_MAJOR, FTY_ALERT_FLEXIBLE_VERSION_MINOR, FTY_ALERT_FLEXIBLE_VERSION_PATCH)
+#define ZM_ALERT_VERSION \
+    ZM_ALERT_MAKE_VERSION(ZM_ALERT_VERSION_MAJOR, ZM_ALERT_VERSION_MINOR, ZM_ALERT_VERSION_PATCH)
 
 #if defined (__WINDOWS__)
-#   if defined FTY_ALERT_FLEXIBLE_STATIC
-#       define FTY_ALERT_FLEXIBLE_EXPORT
-#   elif defined FTY_ALERT_FLEXIBLE_INTERNAL_BUILD
+#   if defined ZM_ALERT_STATIC
+#       define ZM_ALERT_EXPORT
+#   elif defined ZM_ALERT_INTERNAL_BUILD
 #       if defined DLL_EXPORT
-#           define FTY_ALERT_FLEXIBLE_EXPORT __declspec(dllexport)
+#           define ZM_ALERT_EXPORT __declspec(dllexport)
 #       else
-#           define FTY_ALERT_FLEXIBLE_EXPORT
+#           define ZM_ALERT_EXPORT
 #       endif
-#   elif defined FTY_ALERT_FLEXIBLE_EXPORTS
-#       define FTY_ALERT_FLEXIBLE_EXPORT __declspec(dllexport)
+#   elif defined ZM_ALERT_EXPORTS
+#       define ZM_ALERT_EXPORT __declspec(dllexport)
 #   else
-#       define FTY_ALERT_FLEXIBLE_EXPORT __declspec(dllimport)
+#       define ZM_ALERT_EXPORT __declspec(dllimport)
 #   endif
-#   define FTY_ALERT_FLEXIBLE_PRIVATE
+#   define ZM_ALERT_PRIVATE
 #else
-#   define FTY_ALERT_FLEXIBLE_EXPORT
+#   define ZM_ALERT_EXPORT
 #   if (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
-#       define FTY_ALERT_FLEXIBLE_PRIVATE __attribute__ ((visibility ("hidden")))
+#       define ZM_ALERT_PRIVATE __attribute__ ((visibility ("hidden")))
 #   else
-#       define FTY_ALERT_FLEXIBLE_PRIVATE
+#       define ZM_ALERT_PRIVATE
 #   endif
 #endif
 
@@ -78,11 +78,11 @@ typedef struct _flexible_alert_t flexible_alert_t;
 //  Public classes, each with its own header file
 #include "flexible_alert.h"
 
-#ifdef FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
+#ifdef ZM_ALERT_BUILD_DRAFT_API
 //  Self test for private classes
-FTY_ALERT_FLEXIBLE_EXPORT void
-    fty_alert_flexible_private_selftest (bool verbose);
-#endif // FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
+ZM_ALERT_EXPORT void
+    zm_alert_private_selftest (bool verbose);
+#endif // ZM_ALERT_BUILD_DRAFT_API
 
 #endif
 /*

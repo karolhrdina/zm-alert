@@ -5,14 +5,14 @@
 
 # Ignore files generated from .in templates
 # + pkgconfig:
-libfty_alert_flexible.pc
+libzm_alert.pc
 # + main->extra sources (if any):
 
 # + config files for mains (if any):
-fty-alert-flexible.cfg
+zm-alert.cfg
 
 # + systemd service unit for daemons (if any):
-fty-alert-flexible.service
+zm-alert.service
 
 # location designated for writing self-tests:
 selftest-rw/

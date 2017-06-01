@@ -28,19 +28,19 @@ extern "C" {
 
 //  @interface
 //  Create a new flexible_alert
-FTY_ALERT_FLEXIBLE_EXPORT flexible_alert_t *
+ZM_ALERT_EXPORT flexible_alert_t *
     flexible_alert_new (void);
 
 //  Destroy the flexible_alert
-FTY_ALERT_FLEXIBLE_EXPORT void
+ZM_ALERT_EXPORT void
     flexible_alert_destroy (flexible_alert_t **self_p);
 
 // Flexible alert actor
-FTY_ALERT_FLEXIBLE_EXPORT void
+ZM_ALERT_EXPORT void
     flexible_alert_actor (zsock_t *pipe, void *args);
 
 //  Self test of this class
-FTY_ALERT_FLEXIBLE_EXPORT void
+ZM_ALERT_EXPORT void
     flexible_alert_test (bool verbose);
 
 //  @end

@@ -34,7 +34,7 @@ clean-autogened:
 	rm -f .autogened
 
 override_dh_strip:
-	dh_strip --dbg-package=fty-alert-flexible-dbg
+	dh_strip --dbg-package=zm-alert-dbg
 
 override_dh_auto_test:
 	echo "Skipped for now"

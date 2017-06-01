@@ -11,7 +11,7 @@ set -e
 if [ "$BUILD_TYPE" == "default" ]; then
     # Tell travis to deploy all files in dist
     mkdir dist
-    export FTY_ALERT_FLEXIBLE_DEPLOYMENT=dist/*
+    export ZM_ALERT_DEPLOYMENT=dist/*
     # Move archives to dist
     mv *.tar.gz dist
     mv *.zip dist
@@ -22,8 +22,8 @@ if [ "$BUILD_TYPE" == "default" ]; then
     cd -
 elif [ "$BUILD_TYPE" == "bindings" ] && [ "$BINDING" == "jni" ]; then
     ( cd bindings/jni && TERM=dumb PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./gradlew clean bintrayUpload )
-    cp bindings/jni/android/fty_alert_flexible-android.jar fty_alert_flexible-android-0.1.0.jar
-    export FTY_ALERT_FLEXIBLE_DEPLOYMENT=fty_alert_flexible-android-0.1.0.jar
+    cp bindings/jni/android/zm_alert-android.jar zm_alert-android-0.1.0.jar
+    export ZM_ALERT_DEPLOYMENT=zm_alert-android-0.1.0.jar
 else
-    export FTY_ALERT_FLEXIBLE_DEPLOYMENT=""
+    export ZM_ALERT_DEPLOYMENT=""
 fi

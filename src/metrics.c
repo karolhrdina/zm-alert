@@ -26,7 +26,7 @@
 @end
 */
 
-#include "fty_alert_flexible_classes.h"
+#include "zm_alert_classes.h"
 
 //  Structure of our class
 

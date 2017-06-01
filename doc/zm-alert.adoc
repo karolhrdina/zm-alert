@@ -4,24 +4,24 @@ Name(7)
 
 NAME
 ----
-fty-alert-flexible - Overview of agent for creating evaluating alerts
+zm-alert - Overview of agent for creating evaluating alerts
 
 
 SYNOPSIS
 --------
 
-Project fty-alert-flexible aims to ... (short marketing pitch)
+Project zm-alert aims to ... (short marketing pitch)
 
 It delivers several programs with their respective man pages:
- fty-alert-flexible.1
+ zm-alert.1
 and public classes in a shared library:
-
+ flexible_alert.3
 
 Generally you can compile and link against it like this:
 ----
-#include <fty_alert_flexible.h>
+#include <zm_alert.h>
 
-cc ['flags'] 'files' -lfty_alert_flexible ['libraries']
+cc ['flags'] 'files' -lzm_alert ['libraries']
 ----
 
 

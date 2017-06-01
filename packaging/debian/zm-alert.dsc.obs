@@ -1,15 +1,15 @@
 Format: 3.0 (quilt)
-Binary: fty-alert-flexible
-Source: fty-alert-flexible
+Binary: zm-alert
+Source: zm-alert
 Version: 0.1.0
-Maintainer: fty-alert-flexible Developers <email@hostname.com>
+Maintainer: zm-alert Developers <email@hostname.com>
 Architecture: any
 Build-Depends: debhelper (>= 9),
     pkg-config,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
-    libfty-proto-dev,
+    libzm-proto-dev,
     liblua5.1-0-dev,
     systemd,
     dh-systemd,
@@ -17,4 +17,4 @@ Build-Depends: debhelper (>= 9),
     dh-autoreconf
 
 Files:
- 7697688bf65a35bc33ae2db51ebb0e3b 818110 fty-alert-flexible.tar.gz
+ 7697688bf65a35bc33ae2db51ebb0e3b 818110 zm-alert.tar.gz

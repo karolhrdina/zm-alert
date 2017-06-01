@@ -1,5 +1,5 @@
 <project
-    name = "fty-alert-flexible"
+    name = "zm-alert"
     description = "agent for creating evaluating alerts"
     script = "zproject.gsl"
     >
@@ -15,10 +15,10 @@
         repository="https://github.com/42ity/czmq.git"/>
     <use project = "malamute" min_major = "1" />
 
-    <use project = "fty-proto" libname = "libfty_proto" prefix="ftyproto"
+    <use project = "zm-proto" libname = "libzm_proto" prefix="zmproto"
         min_major = "0" min_minor = "0" min_patch = "0"
-        repository = "https://github.com/42ity/fty-proto"
-        test = "fty_proto_test">
+        repository = "https://github.com/42ity/zm-proto"
+        test = "zm_proto_test">
         <use project = "malamute" />
     </use>
 
@@ -29,5 +29,5 @@
     <class name = "metrics" private = "1">List of metrics</class>
     <class name = "flexible alert" state = "stable">Main class for evaluating alerts</class>
 
-    <main name = "fty-alert-flexible" service = "1" />
+    <main name = "zm-alert" service = "1" />
 </project>
