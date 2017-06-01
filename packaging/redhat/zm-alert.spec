@@ -1,5 +1,5 @@
 #
-#    fty-alert-flexible - agent for creating evaluating alerts
+#    zm-alert - agent for creating evaluating alerts
 #
 #    Copyright (C) 2016 - 2017 Tomas Halman                                 
 #                                                                           
@@ -28,7 +28,7 @@
 %else
 %define DRAFTS no
 %endif
-Name:           fty-alert-flexible
+Name:           zm-alert
 Version:        0.1.0
 Release:        1
 Summary:        agent for creating evaluating alerts
@@ -52,46 +52,46 @@ BuildRequires:  xmlto
 BuildRequires:  zeromq-devel
 BuildRequires:  czmq-devel
 BuildRequires:  malamute-devel
-BuildRequires:  fty-proto-devel
+BuildRequires:  zm-proto-devel
 BuildRequires:  lua-devel
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-fty-alert-flexible agent for creating evaluating alerts.
+zm-alert agent for creating evaluating alerts.
 
-%package -n libfty_alert_flexible0
+%package -n libzm_alert0
 Group:          System/Libraries
 Summary:        agent for creating evaluating alerts shared library
 
-%description -n libfty_alert_flexible0
-This package contains shared library for fty-alert-flexible: agent for creating evaluating alerts
+%description -n libzm_alert0
+This package contains shared library for zm-alert: agent for creating evaluating alerts
 
-%post -n libfty_alert_flexible0 -p /sbin/ldconfig
-%postun -n libfty_alert_flexible0 -p /sbin/ldconfig
+%post -n libzm_alert0 -p /sbin/ldconfig
+%postun -n libzm_alert0 -p /sbin/ldconfig
 
-%files -n libfty_alert_flexible0
+%files -n libzm_alert0
 %defattr(-,root,root)
-%{_libdir}/libfty_alert_flexible.so.*
+%{_libdir}/libzm_alert.so.*
 
 %package devel
 Summary:        agent for creating evaluating alerts
 Group:          System/Libraries
-Requires:       libfty_alert_flexible0 = %{version}
+Requires:       libzm_alert0 = %{version}
 Requires:       zeromq-devel
 Requires:       czmq-devel
 Requires:       malamute-devel
-Requires:       fty-proto-devel
+Requires:       zm-proto-devel
 Requires:       lua-devel
 
 %description devel
 agent for creating evaluating alerts development tools
-This package contains development files for fty-alert-flexible: agent for creating evaluating alerts
+This package contains development files for zm-alert: agent for creating evaluating alerts
 
 %files devel
 %defattr(-,root,root)
 %{_includedir}/*
-%{_libdir}/libfty_alert_flexible.so
-%{_libdir}/pkgconfig/libfty_alert_flexible.pc
+%{_libdir}/libzm_alert.so
+%{_libdir}/pkgconfig/libzm_alert.pc
 %{_mandir}/man3/*
 %{_mandir}/man7/*
 
@@ -113,18 +113,18 @@ find %{buildroot} -name '*.la' | xargs rm -f
 %files
 %defattr(-,root,root)
 %doc README.md
-%{_bindir}/fty-alert-flexible
-%{_mandir}/man1/fty-alert-flexible*
-%config(noreplace) %{_sysconfdir}/fty-alert-flexible/fty-alert-flexible.cfg
-/usr/lib/systemd/system/fty-alert-flexible.service
-%dir %{_sysconfdir}/fty-alert-flexible
+%{_bindir}/zm-alert
+%{_mandir}/man1/zm-alert*
+%config(noreplace) %{_sysconfdir}/zm-alert/zm-alert.cfg
+/usr/lib/systemd/system/zm-alert.service
+%dir %{_sysconfdir}/zm-alert
 %if 0%{?suse_version} > 1315
 %post
-%systemd_post fty-alert-flexible.service
+%systemd_post zm-alert.service
 %preun
-%systemd_preun fty-alert-flexible.service
+%systemd_preun zm-alert.service
 %postun
-%systemd_postun_with_restart fty-alert-flexible.service
+%systemd_postun_with_restart zm-alert.service
 %endif
 
 %changelog

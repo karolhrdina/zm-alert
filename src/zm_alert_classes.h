@@ -1,5 +1,5 @@
 /*  =========================================================================
-    fty_alert_flexible_classes - private header file
+    zm_alert_classes - private header file
 
     Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
@@ -23,14 +23,14 @@
     =========================================================================
 */
 
-#ifndef FTY_ALERT_FLEXIBLE_CLASSES_H_INCLUDED
-#define FTY_ALERT_FLEXIBLE_CLASSES_H_INCLUDED
+#ifndef ZM_ALERT_CLASSES_H_INCLUDED
+#define ZM_ALERT_CLASSES_H_INCLUDED
 
 //  Platform definitions, must come first
 #include "platform.h"
 
 //  External API
-#include "../include/fty_alert_flexible.h"
+#include "../include/zm_alert.h"
 
 //  Extra headers
 
@@ -54,27 +54,27 @@ typedef struct _metrics_t metrics_t;
 #include "metrics.h"
 
 //  *** To avoid double-definitions, only define if building without draft ***
-#ifndef FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
+#ifndef ZM_ALERT_BUILD_DRAFT_API
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-FTY_ALERT_FLEXIBLE_PRIVATE void
+ZM_ALERT_PRIVATE void
     rule_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-FTY_ALERT_FLEXIBLE_PRIVATE void
+ZM_ALERT_PRIVATE void
     vsjson_test (bool verbose);
 
 //  *** Draft method, defined for internal use only ***
 //  Self test of this class.
-FTY_ALERT_FLEXIBLE_PRIVATE void
+ZM_ALERT_PRIVATE void
     metrics_test (bool verbose);
 
 //  Self test for private classes
-FTY_ALERT_FLEXIBLE_PRIVATE void
-    fty_alert_flexible_private_selftest (bool verbose);
+ZM_ALERT_PRIVATE void
+    zm_alert_private_selftest (bool verbose);
 
-#endif // FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
+#endif // ZM_ALERT_BUILD_DRAFT_API
 
 #endif

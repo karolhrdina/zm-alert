@@ -1,5 +1,5 @@
 /*  =========================================================================
-    fty_alert_flexible_selftest.c - run selftests
+    zm_alert_selftest.c - run selftests
 
     Runs all selftests.
 
@@ -27,7 +27,7 @@
     =========================================================================
 */
 
-#include "fty_alert_flexible_classes.h"
+#include "zm_alert_classes.h"
 
 typedef struct {
     const char *testname;
@@ -38,9 +38,9 @@ static test_item_t
 all_tests [] = {
 // Tests for stable public classes:
     { "flexible_alert", flexible_alert_test },
-#ifdef FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
-    { "private_classes", fty_alert_flexible_private_selftest },
-#endif // FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API
+#ifdef ZM_ALERT_BUILD_DRAFT_API
+    { "private_classes", zm_alert_private_selftest },
+#endif // ZM_ALERT_BUILD_DRAFT_API
     {0, 0}          //  Sentinel
 };
 
@@ -68,7 +68,7 @@ static void
 test_runall (bool verbose)
 {
     test_item_t *item;
-    printf ("Running fty-alert-flexible selftests...\n");
+    printf ("Running zm-alert selftests...\n");
     for (item = all_tests; item->test; item++)
         item->test (verbose);
 
@@ -84,7 +84,7 @@ main (int argc, char **argv)
     for (argn = 1; argn < argc; argn++) {
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
-            puts ("fty_alert_flexible_selftest.c [options] ...");
+            puts ("zm_alert_selftest.c [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --number / -n          report number of tests");
             puts ("  --list / -l            list all tests");
@@ -143,7 +143,7 @@ main (int argc, char **argv)
     #endif //
 
     if (test) {
-        printf ("Running fty-alert-flexible test '%s'...\n", test->testname);
+        printf ("Running zm-alert test '%s'...\n", test->testname);
         test->test (verbose);
     }
     else

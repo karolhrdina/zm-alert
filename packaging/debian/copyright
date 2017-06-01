@@ -1,9 +1,9 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: fty-alert-flexible
+Upstream-Name: zm-alert
 
 Files: *
-Copyright: 2015- fty-alert-flexible Developers <email@hostname.com>
-License: fty-alert-flexible_license
+Copyright: 2015- zm-alert Developers <email@hostname.com>
+License: zm-alert_license
  Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                         
  This program is free software; you can redistribute it and/or modify   

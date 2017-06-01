@@ -267,15 +267,15 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         cd "${BASE_PWD}"
     fi
 
-    # Start of recipe for dependency: fty-proto
-    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libfty_proto-dev >/dev/null 2>&1) || \
-           (command -v brew >/dev/null 2>&1 && brew ls --versions fty-proto >/dev/null 2>&1) \
+    # Start of recipe for dependency: zm-proto
+    if ! (command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libzm_proto-dev >/dev/null 2>&1) || \
+           (command -v brew >/dev/null 2>&1 && brew ls --versions zm-proto >/dev/null 2>&1) \
     ; then
         echo ""
         BASE_PWD=${PWD}
-        echo "`date`: INFO: Building prerequisite 'fty-proto' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/fty-proto fty-proto
-        cd fty-proto
+        echo "`date`: INFO: Building prerequisite 'zm-proto' from Git repository..." >&2
+        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/zm-proto zm-proto
+        cd zm-proto
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
         git --no-pager log --oneline -n1

@@ -13,8 +13,8 @@
 # Ignore the source doc texts generated from program sources
 flexible_alert.txt
 flexible_alert.doc
-fty-alert-flexible.txt
-fty-alert-flexible.doc
+zm-alert.txt
+zm-alert.doc
 
 # Make sure to track the manually maintained project description
 !*.adoc

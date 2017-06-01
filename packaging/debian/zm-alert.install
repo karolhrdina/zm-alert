@@ -1,0 +1,5 @@
+usr/bin/zm-alert
+usr/share/man/man1/zm-alert.1
+etc/zm-alert/zm-alert.cfg
+lib/systemd/system/zm-alert.service
+

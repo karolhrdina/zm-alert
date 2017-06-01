@@ -34,15 +34,15 @@ typedef struct _metrics_t metrics_t;
 
 //  @interface
 //  Create a new metrics
-FTY_ALERT_FLEXIBLE_PRIVATE metrics_t *
+ZM_ALERT_PRIVATE metrics_t *
     metrics_new (void);
 
 //  Destroy the metrics
-FTY_ALERT_FLEXIBLE_PRIVATE void
+ZM_ALERT_PRIVATE void
     metrics_destroy (metrics_t **self_p);
 
 //  Self test of this class
-FTY_ALERT_FLEXIBLE_PRIVATE void
+ZM_ALERT_PRIVATE void
     metrics_test (bool verbose);
 
 //  @end

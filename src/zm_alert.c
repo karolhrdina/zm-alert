@@ -1,5 +1,5 @@
 /*  =========================================================================
-    fty_alert_flexible - description
+    zm_alert - description
 
     Copyright (C) 2016 - 2017 Tomas Halman                                 
                                                                            
@@ -21,14 +21,14 @@
 
 /*
 @header
-    fty_alert_flexible - agent for creating / evaluating alerts
+    zm_alert - agent for creating / evaluating alerts
 @discuss
 @end
 */
 
-#include "fty_alert_flexible_classes.h"
+#include "zm_alert_classes.h"
 
-static const char *ACTOR_NAME = "fty-alert-flexible";
+static const char *ACTOR_NAME = "zm-alert-flexible";
 static const char *ENDPOINT = "ipc://@/malamute";
 static const char *RULES_DIR = "./rules";
 
@@ -42,7 +42,7 @@ int main (int argc, char *argv [])
 
         if (streq (argv [argn], "--help")
         ||  streq (argv [argn], "-h")) {
-            puts ("fty-alert-flexible [options] ...");
+            puts ("zm-alert-flexible [options] ...");
             puts ("  --verbose / -v         verbose test output");
             puts ("  --help / -h            this information");
             puts ("  --endpoint / -e        malamute endpoint [ipc://@/malamute]");
@@ -67,13 +67,13 @@ int main (int argc, char *argv [])
     }
     //  Insert main code here
     if (verbose)
-        zsys_info ("fty_alert_flexible - started");
+        zsys_info ("zm_alert - started");
     zactor_t *server = zactor_new (flexible_alert_actor, NULL);
     assert (server);
     zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
-    zstr_sendx (server, "PRODUCER", FTY_PROTO_STREAM_ALERTS_SYS, NULL);
-    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_METRICS, ".*", NULL);
-    zstr_sendx (server, "CONSUMER", FTY_PROTO_STREAM_ASSETS, ".*", NULL);
+    zstr_sendx (server, "PRODUCER", ZM_PROTO_STREAM_ALERTS_SYS, NULL);
+    zstr_sendx (server, "CONSUMER", ZM_PROTO_STREAM_METRICS, ".*", NULL);
+    zstr_sendx (server, "CONSUMER", ZM_PROTO_STREAM_ASSETS, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);
@@ -81,7 +81,7 @@ int main (int argc, char *argv [])
     }
     zactor_destroy (&server);
     if (verbose)
-        zsys_info ("fty_alert_flexible - exited");
+        zsys_info ("zm_alert - exited");
 
     return 0;
 }

@@ -1,0 +1,5 @@
+usr/include/*
+usr/lib/*/libzm_alert.so
+usr/lib/*/pkgconfig/libzm_alert.pc
+usr/share/man/man3/*
+usr/share/man/man7/*

@@ -60,7 +60,7 @@ deploy:
     # To encrypt your access token run: `travis encrypt -r user/repo`
     secure: <encrypted github access token>
   file_glob: true
-  file: ${FTY_ALERT_FLEXIBLE_DEPLOYMENT}
+  file: ${FTY_ALERT_DEPLOYMENT}
   skip_cleanup: true
   on:
     branch: master

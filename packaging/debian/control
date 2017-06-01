@@ -1,5 +1,5 @@
 #
-#    fty-alert-flexible - agent for creating evaluating alerts
+#    zm-alert - agent for creating evaluating alerts
 #
 #    Copyright (C) 2016 - 2017 Tomas Halman                                 
 #                                                                           
@@ -17,55 +17,55 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
 
-Source:         fty-alert-flexible
+Source:         zm-alert
 Section:        net
 Priority:       optional
-Maintainer:     fty-alert-flexible Developers <email@hostname.com>
+Maintainer:     zm-alert Developers <email@hostname.com>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9),
     pkg-config,
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
-    libfty-proto-dev,
+    libzm-proto-dev,
     liblua5.1-0-dev,
     systemd,
     dh-systemd,
     asciidoc-base | asciidoc, xmlto,
     dh-autoreconf
 
-Package: libfty-alert-flexible0
+Package: libzm-alert0
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: agent for creating evaluating alerts shared library
- This package contains shared library for fty-alert-flexible: agent for creating evaluating alerts
+ This package contains shared library for zm-alert: agent for creating evaluating alerts
 
-Package: libfty-alert-flexible-dev
+Package: libzm-alert-dev
 Architecture: any
 Section: libdevel
 Depends:
     libzmq3-dev,
     libczmq-dev,
     libmlm-dev,
-    libfty-proto-dev,
+    libzm-proto-dev,
     liblua5.1-0-dev,
-    libfty-alert-flexible0 (= ${binary:Version})
+    libzm-alert0 (= ${binary:Version})
 Description: agent for creating evaluating alerts development tools
- This package contains development files for fty-alert-flexible: agent for creating evaluating alerts
+ This package contains development files for zm-alert: agent for creating evaluating alerts
 
-Package: fty-alert-flexible
+Package: zm-alert
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends},
 Description: agent for creating evaluating alerts
- Main package for fty-alert-flexible: agent for creating evaluating alerts
+ Main package for zm-alert: agent for creating evaluating alerts
 
-Package: fty-alert-flexible-dbg
+Package: zm-alert-dbg
 Architecture: any
 Section: debug
 Priority: extra
 Depends:
-    fty-alert-flexible (= ${binary:Version}),
+    zm-alert (= ${binary:Version}),
     ${misc:Depends}
 Description: agent for creating evaluating alerts debugging symbols
- This package contains the debugging symbols for fty-alert-flexible : agent for creating evaluating alerts.
+ This package contains the debugging symbols for zm-alert : agent for creating evaluating alerts.
 

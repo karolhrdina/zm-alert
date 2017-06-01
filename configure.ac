@@ -7,7 +7,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-AC_INIT([fty-alert-flexible],[0.1.0],[email@hostname.com])
+AC_INIT([zm-alert],[0.1.0],[email@hostname.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -20,11 +20,11 @@ PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
 PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
 PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
-    [FTY_ALERT_FLEXIBLE major version])
+    [ZM_ALERT major version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
-    [FTY_ALERT_FLEXIBLE minor version])
+    [ZM_ALERT minor version])
 AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
-    [FTY_ALERT_FLEXIBLE patchlevel])
+    [ZM_ALERT patchlevel])
 # This lets us use PACKAGE_VERSION in Makefiles
 AC_SUBST(PACKAGE_VERSION)
 
@@ -35,12 +35,12 @@ AC_SUBST(PACKAGE_VERSION)
 # know exactly what you're doing and have read and understand
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
-# libfty_alert_flexible -version-info
+# libzm_alert -version-info
 LTVER="0:0:0"
 AC_SUBST(LTVER)
 
 # Capture c flags
-FTY_ALERT_FLEXIBLE_ORIG_CFLAGS="${CFLAGS:-none}"
+ZM_ALERT_ORIG_CFLAGS="${CFLAGS:-none}"
 
 # Checks for programs
 AC_PROG_CC
@@ -55,13 +55,13 @@ PKG_PROG_PKG_CONFIG
 # Code coverage
 AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
                   [With GCC Code Coverage reporting])],
-                  [FTY_ALERT_FLEXIBLE_GCOV="$withval"])
+                  [ZM_ALERT_GCOV="$withval"])
 
-if test "x${FTY_ALERT_FLEXIBLE_GCOV}" == "xyes"; then
+if test "x${ZM_ALERT_GCOV}" == "xyes"; then
     CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 
-    if test "x${FTY_ALERT_FLEXIBLE_ORIG_CFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${FTY_ALERT_FLEXIBLE_ORIG_CFLAGS}"
+    if test "x${ZM_ALERT_ORIG_CFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${ZM_ALERT_ORIG_CFLAGS}"
     fi
     AM_CONDITIONAL(WITH_GCOV, true)
 else
@@ -111,7 +111,7 @@ AS_CASE([x"${with_libzmq}"],
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
 AS_IF([test x"${search_libzmq}" = xno],
-    [AC_MSG_WARN([Required dependency on libzmq was explicitly disabled during configuration by '--with-libzmq=no'; subsequent full build of fty-alert-flexible may fail])])
+    [AC_MSG_WARN([Required dependency on libzmq was explicitly disabled during configuration by '--with-libzmq=no'; subsequent full build of zm-alert may fail])])
 
 AS_IF([test x"${search_libzmq}" = xyes], [
     # Archive previously detected and supplied flags
@@ -198,7 +198,7 @@ AS_CASE([x"${with_libczmq}"],
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
 AS_IF([test x"${search_libczmq}" = xno],
-    [AC_MSG_WARN([Required dependency on czmq was explicitly disabled during configuration by '--with-libczmq=no'; subsequent full build of fty-alert-flexible may fail])])
+    [AC_MSG_WARN([Required dependency on czmq was explicitly disabled during configuration by '--with-libczmq=no'; subsequent full build of zm-alert may fail])])
 
 AS_IF([test x"${search_libczmq}" = xyes], [
     # Archive previously detected and supplied flags
@@ -285,7 +285,7 @@ AS_CASE([x"${with_libmlm}"],
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
 AS_IF([test x"${search_libmlm}" = xno],
-    [AC_MSG_WARN([Required dependency on malamute was explicitly disabled during configuration by '--with-libmlm=no'; subsequent full build of fty-alert-flexible may fail])])
+    [AC_MSG_WARN([Required dependency on malamute was explicitly disabled during configuration by '--with-libmlm=no'; subsequent full build of zm-alert may fail])])
 
 AS_IF([test x"${search_libmlm}" = xyes], [
     # Archive previously detected and supplied flags
@@ -352,91 +352,91 @@ dnl END of PKG_CHECK_MODULES and/or direct tests for libmlm
 dnl END of enabled attempts to search for libmlm
 
 
-was_fty_proto_check_lib_detected=no
+was_zm_proto_check_lib_detected=no
 
-search_libfty_proto="yes"
+search_libzm_proto="yes"
 
-AC_ARG_WITH([libfty_proto],
+AC_ARG_WITH([libzm_proto],
     [
-        AS_HELP_STRING([--with-libfty_proto],
-        [yes or no. Optionally specify libfty_proto prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
+        AS_HELP_STRING([--with-libzm_proto],
+        [yes or no. Optionally specify libzm_proto prefix (directory where its include/ and lib/ are located), but that is only used if pkgconfig metadata is not found first])
     ],
     [
-        search_libfty_proto="yes"
+        search_libzm_proto="yes"
     ],
     [])
-AS_CASE([x"${with_libfty_proto}"],
-    [xyes], [search_libfty_proto="yes"],
-    [xno],  [search_libfty_proto="no"])
+AS_CASE([x"${with_libzm_proto}"],
+    [xyes], [search_libzm_proto="yes"],
+    [xno],  [search_libzm_proto="no"])
 
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
-AS_IF([test x"${search_libfty_proto}" = xno],
-    [AC_MSG_WARN([Required dependency on fty_proto was explicitly disabled during configuration by '--with-libfty_proto=no'; subsequent full build of fty-alert-flexible may fail])])
+AS_IF([test x"${search_libzm_proto}" = xno],
+    [AC_MSG_WARN([Required dependency on zm_proto was explicitly disabled during configuration by '--with-libzm_proto=no'; subsequent full build of zm-alert may fail])])
 
-AS_IF([test x"${search_libfty_proto}" = xyes], [
+AS_IF([test x"${search_libzm_proto}" = xyes], [
     # Archive previously detected and supplied flags
     PRE_SEARCH_CFLAGS="${CFLAGS}"
     PRE_SEARCH_LIBS="${LIBS}"
 
     found_pkgconfig=""
     found_linkname=""
-    PKG_CHECK_MODULES([fty_proto], [libfty_proto >= 0.0.0],
+    PKG_CHECK_MODULES([zm_proto], [libzm_proto >= 0.0.0],
     [
-        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $fty_proto_LIBS"
-        was_fty_proto_check_lib_detected=pkgcfg
-        found_pkgconfig="libfty_proto"
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $zm_proto_LIBS"
+        was_zm_proto_check_lib_detected=pkgcfg
+        found_pkgconfig="libzm_proto"
     ],
     [
-        AC_MSG_NOTICE([Package libfty_proto not found; falling back to defined compilability tests])
+        AC_MSG_NOTICE([Package libzm_proto not found; falling back to defined compilability tests])
 
-        fty_proto_synthetic_cflags=""
-        fty_proto_synthetic_libs="-lftyproto"
+        zm_proto_synthetic_cflags=""
+        zm_proto_synthetic_libs="-lzmproto"
 
-        if test -n "${with_libfty_proto}" && test x"${with_libfty_proto}" != xyes && test x"${with_libfty_proto}" != xno; then
-            if test -r "${with_libfty_proto}/include/ftyproto.h"; then
-                fty_proto_synthetic_cflags="-I${with_libfty_proto}/include"
-                fty_proto_synthetic_libs="-L${with_libfty_proto}/lib -lftyproto"
+        if test -n "${with_libzm_proto}" && test x"${with_libzm_proto}" != xyes && test x"${with_libzm_proto}" != xno; then
+            if test -r "${with_libzm_proto}/include/zmproto.h"; then
+                zm_proto_synthetic_cflags="-I${with_libzm_proto}/include"
+                zm_proto_synthetic_libs="-L${with_libzm_proto}/lib -lzmproto"
             else
-            AC_MSG_ERROR([Header file ${with_libfty_proto}/include/ftyproto.h was not found. Please check libfty_proto prefix])
+            AC_MSG_ERROR([Header file ${with_libzm_proto}/include/zmproto.h was not found. Please check libzm_proto prefix])
             fi
         else
-            AC_CHECK_HEADER([ftyproto.h], [],
-            AC_MSG_ERROR([Header file ftyproto.h was not found in default search paths])
+            AC_CHECK_HEADER([zmproto.h], [],
+            AC_MSG_ERROR([Header file zmproto.h was not found in default search paths])
                 )
         fi
 
-        AC_CHECK_LIB([ftyproto], [fty_proto_test],
+        AC_CHECK_LIB([zmproto], [zm_proto_test],
             [
-                was_fty_proto_check_lib_detected=yes
-                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lftyproto"
-                found_linkname="ftyproto"
+                was_zm_proto_check_lib_detected=yes
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lzmproto"
+                found_linkname="zmproto"
             ],
-            [AC_MSG_ERROR([cannot link with -lftyproto, install libfty_proto])])
+            [AC_MSG_ERROR([cannot link with -lzmproto, install libzm_proto])])
     ])
 
-dnl END of PKG_CHECK_MODULES and/or direct tests for libfty_proto
-    AS_CASE(["x${was_fty_proto_check_lib_detected}"],
+dnl END of PKG_CHECK_MODULES and/or direct tests for libzm_proto
+    AS_CASE(["x${was_zm_proto_check_lib_detected}"],
         [xpkgcfg], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[${found_pkgconfig}])
-                CFLAGS="${fty_proto_CFLAGS} ${CFLAGS}"
-                LIBS="${fty_proto_LIBS} ${LIBS}"
+                AC_SUBST([pkgconfig_name_libzm_proto],[${found_pkgconfig}])
+                CFLAGS="${zm_proto_CFLAGS} ${CFLAGS}"
+                LIBS="${zm_proto_LIBS} ${LIBS}"
             ],
         [xyes], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[${found_linkname}])
-                CFLAGS="${fty_proto_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${fty_proto_synthetic_libs} ${LDFLAGS}"
-                LIBS="${fty_proto_synthetic_libs} ${LIBS}"
+                AC_SUBST([pkgconfig_name_libzm_proto],[${found_linkname}])
+                CFLAGS="${zm_proto_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${zm_proto_synthetic_libs} ${LDFLAGS}"
+                LIBS="${zm_proto_synthetic_libs} ${LIBS}"
 
-                AC_SUBST([fty_proto_CFLAGS],[${fty_proto_synthetic_cflags}])
-                AC_SUBST([fty_proto_LIBS],[${fty_proto_synthetic_libs}])
+                AC_SUBST([zm_proto_CFLAGS],[${zm_proto_synthetic_cflags}])
+                AC_SUBST([zm_proto_LIBS],[${zm_proto_synthetic_libs}])
             ],
         [xno], [
-                AC_SUBST([pkgconfig_name_libfty_proto],[libfty_proto])
-            AC_MSG_ERROR([Cannot find pkg-config metadata for libfty_proto 0.0.0 or higher])
+                AC_SUBST([pkgconfig_name_libzm_proto],[libzm_proto])
+            AC_MSG_ERROR([Cannot find pkg-config metadata for libzm_proto 0.0.0 or higher])
     ])
 ])
-dnl END of enabled attempts to search for libfty_proto
+dnl END of enabled attempts to search for libzm_proto
 
 
 was_lua_5_1_check_lib_detected=no
@@ -459,7 +459,7 @@ AS_CASE([x"${with_lua}"],
 dnl We do not abort right now, because the maintainer/developer may have
 dnl something particular in mind, e.g. to build just parts of a project.
 AS_IF([test x"${search_lua}" = xno],
-    [AC_MSG_WARN([Required dependency on lua_5_1 was explicitly disabled during configuration by '--with-lua=no'; subsequent full build of fty-alert-flexible may fail])])
+    [AC_MSG_WARN([Required dependency on lua_5_1 was explicitly disabled during configuration by '--with-lua=no'; subsequent full build of zm-alert may fail])])
 
 AS_IF([test x"${search_lua}" = xyes], [
     # Archive previously detected and supplied flags
@@ -577,11 +577,11 @@ LIBS="${PREVIOUS_LIBS}"
 AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
 
 # Platform specific checks
-fty_alert_flexible_on_mingw32="no"
-fty_alert_flexible_on_cygwin="no"
-fty_alert_flexible_on_android="no"
-fty_alert_flexible_on_linux="no"
-fty_alert_flexible_on_gnu="no"
+zm_alert_on_mingw32="no"
+zm_alert_on_cygwin="no"
+zm_alert_on_android="no"
+zm_alert_on_linux="no"
+zm_alert_on_gnu="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
@@ -594,46 +594,46 @@ AC_ARG_WITH([docs],
     [with_docs=$withval])
 
 if test "x$with_docs" = "xno"; then
-    fty_alert_flexible_build_doc="no"
-    fty_alert_flexible_install_man="no"
+    zm_alert_build_doc="no"
+    zm_alert_install_man="no"
 else
     # Determine whether or not documentation should be built and installed.
-    fty_alert_flexible_build_doc="yes"
-    fty_alert_flexible_install_man="yes"
+    zm_alert_build_doc="yes"
+    zm_alert_install_man="yes"
 
     # Check for asciidoc and xmlto and don't build the docs if these are not installed.
-    AC_CHECK_PROG(fty_alert_flexible_have_asciidoc, asciidoc, yes, no)
-    AC_CHECK_PROG(fty_alert_flexible_have_xmlto, xmlto, yes, no)
-    if test "x$fty_alert_flexible_have_asciidoc" = "xno" -o "x$fty_alert_flexible_have_xmlto" = "xno"; then
-        fty_alert_flexible_build_doc="no"
+    AC_CHECK_PROG(zm_alert_have_asciidoc, asciidoc, yes, no)
+    AC_CHECK_PROG(zm_alert_have_xmlto, xmlto, yes, no)
+    if test "x$zm_alert_have_asciidoc" = "xno" -o "x$zm_alert_have_xmlto" = "xno"; then
+        zm_alert_build_doc="no"
         # Tarballs built with 'make dist' ship with prebuilt documentation.
-        if ! test -f doc/fty-alert-flexible.7; then
-            fty_alert_flexible_install_man="no"
-            AC_MSG_WARN([You are building an unreleased version of FTY-ALERT-FLEXIBLE and asciidoc or xmlto are not installed.])
+        if ! test -f doc/zm-alert.7; then
+            zm_alert_install_man="no"
+            AC_MSG_WARN([You are building an unreleased version of ZM-ALERT and asciidoc or xmlto are not installed.])
             AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
         fi
     fi
 fi
 AC_MSG_CHECKING([whether to build documentation])
-AC_MSG_RESULT([$fty_alert_flexible_build_doc])
+AC_MSG_RESULT([$zm_alert_build_doc])
 AC_MSG_CHECKING([whether to install manpages])
-AC_MSG_RESULT([$fty_alert_flexible_install_man])
+AC_MSG_RESULT([$zm_alert_install_man])
 
-# Set some default features required by libfty_alert_flexible code.
-CPPFLAGS="-DFTY_ALERT_FLEXIBLE_INTERNAL_BUILD -D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
+# Set some default features required by libzm_alert code.
+CPPFLAGS="-DZM_ALERT_INTERNAL_BUILD -D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # OS-specific tests
 case "${host_os}" in
     *linux*)
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_LINUX, 1, [Have Linux OS])
-        fty_alert_flexible_on_linux="yes"
+        AC_DEFINE(ZM_ALERT_HAVE_LINUX, 1, [Have Linux OS])
+        zm_alert_on_linux="yes"
 
         case "${host_os}" in
             *android*)
-                AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_ANDROID, 1, [Have Android OS])
-                fty_alert_flexible_on_android="yes"
+                AC_DEFINE(ZM_ALERT_HAVE_ANDROID, 1, [Have Android OS])
+                zm_alert_on_android="yes"
             ;;
         esac
         ;;
@@ -642,70 +642,70 @@ case "${host_os}" in
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
         # Allow definitions of common OS-provided functions that are not in old standards
         CPPFLAGS="-D__EXTENSIONS__ $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE(ZM_ALERT_HAVE_SOLARIS, 1, [Have Solaris OS])
         CFLAGS="${CFLAGS} -lsocket -lssp"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE(ZM_ALERT_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE(ZM_ALERT_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_NETBSD, 1, [Have NetBSD OS])
+        AC_DEFINE(ZM_ALERT_HAVE_NETBSD, 1, [Have NetBSD OS])
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE(ZM_ALERT_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE(ZM_ALERT_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         ;;
     *aix*)
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE(ZM_ALERT_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE(ZM_ALERT_HAVE_HPUX, 1, [Have HPUX OS])
         ;;
     *mingw32*)
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE(ZM_ALERT_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE(ZM_ALERT_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
-        fty_alert_flexible_on_mingw32="yes"
-        fty_alert_flexible_install_man="no"
+        zm_alert_on_mingw32="yes"
+        zm_alert_install_man="no"
         ;;
     *mingw64*)
         # Define on MINGW64 to enable all libeary features
         # Disable format error due to incomplete ANSI C
         CPPFLAGS="-Wno-error=format -D_XOPEN_SOURCE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE(ZM_ALERT_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE(ZM_ALERT_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
-        fty_alert_flexible_on_mingw32="yes"
-        fty_alert_flexible_install_man="no"
+        zm_alert_on_mingw32="yes"
+        zm_alert_install_man="no"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_CYGWIN, 1, [Have Cygwin])
-        fty_alert_flexible_on_cygwin="yes"
+        AC_DEFINE(ZM_ALERT_HAVE_CYGWIN, 1, [Have Cygwin])
+        zm_alert_on_cygwin="yes"
         ;;
     gnu*)
         # Define on GNU/Hurd to enable all library features
         if test "x$GXX" = "xyes"; then
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
-        AC_DEFINE(FTY_ALERT_FLEXIBLE_HAVE_GNU, 1, [Have GNU/Hurd OS])
-        fty_alert_flexible_on_gnu="yes"
+        AC_DEFINE(ZM_ALERT_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        zm_alert_on_gnu="yes"
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}])
@@ -742,13 +742,13 @@ if test "x$GCC" = "xyes"; then
 fi
 
 AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$fty_alert_flexible_on_mingw32" = "xyes")
-AM_CONDITIONAL(ON_CYGWIN, test "x$fty_alert_flexible_on_cygwin" = "xyes")
-AM_CONDITIONAL(ON_ANDROID, test "x$fty_alert_flexible_on_android" = "xyes")
-AM_CONDITIONAL(ON_LINUX, test "x$fty_alert_flexible_on_linux" = "xyes")
-AM_CONDITIONAL(ON_GNU, test "x$fty_alert_flexible_on_gnu" = "xyes")
-AM_CONDITIONAL(INSTALL_MAN, test "x$fty_alert_flexible_install_man" = "xyes")
-AM_CONDITIONAL(BUILD_DOC, test "x$fty_alert_flexible_build_doc" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$zm_alert_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$zm_alert_on_cygwin" = "xyes")
+AM_CONDITIONAL(ON_ANDROID, test "x$zm_alert_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$zm_alert_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$zm_alert_on_gnu" = "xyes")
+AM_CONDITIONAL(INSTALL_MAN, test "x$zm_alert_install_man" = "xyes")
+AM_CONDITIONAL(BUILD_DOC, test "x$zm_alert_build_doc" = "xyes")
 
 AC_ARG_ENABLE([dist_cmakefiles],
     AS_HELP_STRING([--enable-dist_cmakefiles],
@@ -763,25 +763,25 @@ fi
      AC_MSG_RESULT([$enable_dist_cmakefiles])])
 AM_CONDITIONAL(ENABLE_DIST_CMAKEFILES, test "x$enable_dist_cmakefiles" = "xyes")
 
-# Check for fty-alert-flexible intent
-AC_ARG_ENABLE([fty-alert-flexible],
-    AS_HELP_STRING([--enable-fty-alert-flexible],
-        [Compile and install 'fty-alert-flexible' [default=yes]]),
-    [enable_fty_alert_flexible=$enableval],
-    [enable_fty_alert_flexible=yes])
+# Check for zm-alert intent
+AC_ARG_ENABLE([zm-alert],
+    AS_HELP_STRING([--enable-zm-alert],
+        [Compile and install 'zm-alert' [default=yes]]),
+    [enable_zm_alert=$enableval],
+    [enable_zm_alert=yes])
 
-AM_CONDITIONAL([ENABLE_FTY_ALERT_FLEXIBLE], [test x$enable_fty_alert_flexible != xno])
-AM_COND_IF([ENABLE_FTY_ALERT_FLEXIBLE], [AC_MSG_NOTICE([ENABLE_FTY_ALERT_FLEXIBLE defined])])
+AM_CONDITIONAL([ENABLE_ZM_ALERT], [test x$enable_zm_alert != xno])
+AM_COND_IF([ENABLE_ZM_ALERT], [AC_MSG_NOTICE([ENABLE_ZM_ALERT defined])])
 
-# Check for fty_alert_flexible_selftest intent
-AC_ARG_ENABLE([fty_alert_flexible_selftest],
-    AS_HELP_STRING([--enable-fty_alert_flexible_selftest],
-        [Compile 'fty_alert_flexible_selftest' in src [default=yes]]),
-    [enable_fty_alert_flexible_selftest=$enableval],
-    [enable_fty_alert_flexible_selftest=yes])
+# Check for zm_alert_selftest intent
+AC_ARG_ENABLE([zm_alert_selftest],
+    AS_HELP_STRING([--enable-zm_alert_selftest],
+        [Compile 'zm_alert_selftest' in src [default=yes]]),
+    [enable_zm_alert_selftest=$enableval],
+    [enable_zm_alert_selftest=yes])
 
-AM_CONDITIONAL([ENABLE_FTY_ALERT_FLEXIBLE_SELFTEST], [test x$enable_fty_alert_flexible_selftest != xno])
-AM_COND_IF([ENABLE_FTY_ALERT_FLEXIBLE_SELFTEST], [AC_MSG_NOTICE([ENABLE_FTY_ALERT_FLEXIBLE_SELFTEST defined])])
+AM_CONDITIONAL([ENABLE_ZM_ALERT_SELFTEST], [test x$enable_zm_alert_selftest != xno])
+AM_COND_IF([ENABLE_ZM_ALERT_SELFTEST], [AC_MSG_NOTICE([ENABLE_ZM_ALERT_SELFTEST defined])])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
@@ -842,8 +842,8 @@ AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
 
 if test "x$enable_drafts" = "xyes"; then
     AC_MSG_NOTICE([Building stable and legacy API + draft API])
-    AC_DEFINE(FTY_ALERT_FLEXIBLE_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
-    AC_SUBST(pkg_config_defines, "-DFTY_ALERT_FLEXIBLE_BUILD_DRAFT_API=1")
+    AC_DEFINE(ZM_ALERT_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
+    AC_SUBST(pkg_config_defines, "-DZM_ALERT_BUILD_DRAFT_API=1")
 else
     AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
     AC_SUBST(pkg_config_defines, "")
@@ -879,13 +879,13 @@ AS_IF([test "x$enable_Werror" = "xyes" || test "x$enable_Werror" = "xauto"],
 # Specify output files
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
-                 src/libfty_alert_flexible.pc
-                 src/fty-alert-flexible.cfg
+                 src/libzm_alert.pc
+                 src/zm-alert.cfg
                  ])
 
 AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
-                 src/fty-alert-flexible.service
+                 src/zm-alert.service
     ])],
     [])
 
@@ -927,12 +927,12 @@ echo C++ compiler.................. : $CXX
 echo C++ compiler flags............ : $CXXFLAGS
 echo Configure date................ : $BUILD_DATE
 echo Build architecture............ : $BUILD_ARCH
-echo Build docs.................... : $fty_alert_flexible_build_doc
+echo Build docs.................... : $zm_alert_build_doc
 echo Build host.................... : $BUILD_HOST
 echo Build user.................... : $USER
 echo Draft API..................... : $enable_drafts
 echo Install dir................... : $prefix
-echo Install man pages............. : $fty_alert_flexible_install_man
+echo Install man pages............. : $zm_alert_install_man
 
 echo
 echo Help:

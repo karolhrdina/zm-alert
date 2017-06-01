@@ -8,13 +8,13 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libfty_alert_flexible
+Name: libzm_alert
 Description: agent for creating evaluating alerts
 Version: @VERSION@
 
-Requires:@pkgconfig_name_libzmq@ @pkgconfig_name_libczmq@ >= 3.0.0 @pkgconfig_name_libmlm@ >= 1.0.0 @pkgconfig_name_libfty_proto@ @pkgconfig_name_lua@ >= 5.1.0
+Requires:@pkgconfig_name_libzmq@ @pkgconfig_name_libczmq@ >= 3.0.0 @pkgconfig_name_libmlm@ >= 1.0.0 @pkgconfig_name_libzm_proto@ @pkgconfig_name_lua@ >= 5.1.0
 
-Libs: -L${libdir} -lfty_alert_flexible
+Libs: -L${libdir} -lzm_alert
 Cflags: -I${includedir} @pkg_config_defines@
 Libs.private: @pkg_config_libs_private@
 
