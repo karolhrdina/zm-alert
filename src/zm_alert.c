@@ -1,21 +1,21 @@
 /*  =========================================================================
     zm_alert - description
 
-    Copyright (C) 2016 - 2017 Tomas Halman                                 
-                                                                           
-    This program is free software; you can redistribute it and/or modify   
-    it under the terms of the GNU General Public License as published by   
-    the Free Software Foundation; either version 2 of the License, or      
-    (at your option) any later version.                                    
-                                                                           
-    This program is distributed in the hope that it will be useful,        
-    but WITHOUT ANY WARRANTY; without even the implied warranty of         
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          
-    GNU General Public License for more details.                           
-                                                                           
+    Copyright (C) 2016 - 2017 Tomas Halman
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
     You should have received a copy of the GNU General Public License along
     with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.            
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
     =========================================================================
 */
 
@@ -71,9 +71,9 @@ int main (int argc, char *argv [])
     zactor_t *server = zactor_new (flexible_alert_actor, NULL);
     assert (server);
     zstr_sendx (server, "BIND", ENDPOINT, ACTOR_NAME, NULL);
-    zstr_sendx (server, "PRODUCER", ZM_PROTO_STREAM_ALERTS_SYS, NULL);
-    zstr_sendx (server, "CONSUMER", ZM_PROTO_STREAM_METRICS, ".*", NULL);
-    zstr_sendx (server, "CONSUMER", ZM_PROTO_STREAM_ASSETS, ".*", NULL);
+    zstr_sendx (server, "PRODUCER", ZM_PROTO_ALERT_STREAM, NULL);
+    zstr_sendx (server, "CONSUMER", ZM_PROTO_METRIC_STREAM, ".*", NULL);
+    zstr_sendx (server, "CONSUMER", ZM_PROTO_DEVICE_STREAM, ".*", NULL);
     zstr_sendx (server, "LOADRULES", RULES_DIR, NULL);
     while (!zsys_interrupted) {
         zmsg_t *msg = zactor_recv (server);

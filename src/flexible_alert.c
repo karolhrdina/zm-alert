@@ -156,24 +156,22 @@ flexible_alert_load_rules (flexible_alert_t *self, const char *path)
 void
 flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *actions, const char *asset, int result, const char *message, int ttl)
 {
-    char *severity = "OK";
-    if (result == -1 || result == 1) severity = "WARNING";
-    if (result == -2 || result == 2) severity = "CRITICAL";
+    char severity = 0;
+    if (result == -1 || result == 1) severity = 1;
+    if (result == -2 || result == 2) severity = 2;
 
     // topic
     char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity, asset);
 
     // message
     zmsg_t *alert = zm_proto_encode_alert (
-        NULL,
+        asset,
         time(NULL),
         ttl,
+        NULL,
         rulename,
-        asset,
-        result == 0 ? "RESOLVED" : "ACTIVE",
         severity,
-        message,
-        actions); // action list
+        message);
 
     mlm_client_send (self -> mlm, topic, &alert);
 
