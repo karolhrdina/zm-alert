@@ -10,7 +10,7 @@ cd "$REPO_DIR/.."
 git clone --quiet --depth 1 https://github.com/zeromq/libzmq.git libzmq
 git clone --quiet --depth 1 -b v3.0.2 https://github.com/42ity/czmq.git czmq
 git clone --quiet --depth 1 https://github.com/zeromq/malamute.git malamute
-git clone --quiet --depth 1 https://github.com/42ity/zm-proto zm-proto
+git clone --quiet --depth 1 https://github.com/zmonit/zm-proto zm-proto
 cd -
 
 if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list zproject >/dev/null 2>&1) || \
