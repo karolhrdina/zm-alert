@@ -17,7 +17,7 @@
 
     <use project = "zm-proto" libname = "libzm_proto" prefix="zmproto"
         min_major = "0" min_minor = "0" min_patch = "0"
-        repository = "https://github.com/42ity/zm-proto"
+        repository = "https://github.com/zmonit/zm-proto"
         test = "zm_proto_test">
         <use project = "malamute" />
     </use>

@@ -274,7 +274,7 @@ if [ "$BUILD_TYPE" == "default" ] || [ "$BUILD_TYPE" == "default-Werror" ] || [ 
         echo ""
         BASE_PWD=${PWD}
         echo "`date`: INFO: Building prerequisite 'zm-proto' from Git repository..." >&2
-        $CI_TIME git clone --quiet --depth 1 https://github.com/42ity/zm-proto zm-proto
+        $CI_TIME git clone --quiet --depth 1 https://github.com/zmonit/zm-proto zm-proto
         cd zm-proto
         CCACHE_BASEDIR=${PWD}
         export CCACHE_BASEDIR
