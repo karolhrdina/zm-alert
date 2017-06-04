@@ -157,11 +157,12 @@ void
 flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const char *actions, const char *asset, int result, const char *message, int ttl)
 {
     char severity = 0;
-    if (result == -1 || result == 1) severity = 1;
-    if (result == -2 || result == 2) severity = 2;
+    char *severity_txt = "ok";
+    if (result == -1 || result == 1) { severity = 1; severity_txt = "warning"; }
+    if (result == -2 || result == 2) { severity = 2; severity_txt = "critical"; }
 
     // topic
-    char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity, asset);
+    char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity_txt, asset);
 
     // message
     zmsg_t *alert = zm_proto_encode_alert (
@@ -591,7 +592,7 @@ flexible_alert_actor (zsock_t *pipe, void *args)
         }
         else if (which == mlm_client_msgpipe (self->mlm)) {
             zmsg_t *msg = mlm_client_recv (self->mlm);
-            if (streq (mlm_client_command (self->mlm), "STREAM DELIVERY")) {
+            if (streq (mlm_client_command (self->mlm), "STREAM DELIVER")) {
                 // This was publish, should be zm_proto
                 zm_proto_t *fmsg = zm_proto_decode (&msg);
                 if (zm_proto_id (fmsg) == ZM_PROTO_DEVICE) {
@@ -668,8 +669,6 @@ void
 flexible_alert_test (bool verbose)
 {
     printf (" * flexible_alert:\n");
-    printf ("OK\n");
-    return;
 
     // Note: If your selftest reads SCMed fixture data, please keep it in
     // src/selftest-ro; if your test creates filesystem objects, please
