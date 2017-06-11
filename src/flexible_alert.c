@@ -165,7 +165,7 @@ flexible_alert_send_alert (flexible_alert_t *self, const char *rulename, const c
     char *topic = zsys_sprintf ("%s/%s@%s", rulename, severity_txt, asset);
 
     // message
-    zmsg_t *alert = zm_proto_encode_alert (
+    zmsg_t *alert = zm_proto_encode_alert_v1 (
         asset,
         time(NULL),
         ttl,
@@ -723,7 +723,7 @@ flexible_alert_test (bool verbose)
         zhash_autofree (ext);
         zhash_insert (ext, "group.1", "all-upses");
         zhash_insert (ext, "name", "mý děvíce");
-        zmsg_t *assetmsg = zm_proto_encode_device (
+        zmsg_t *assetmsg = zm_proto_encode_device_v1 (
             "mydevice",
             time (NULL),
             3600,
@@ -737,7 +737,7 @@ flexible_alert_test (bool verbose)
     {
         printf ("\t#1 Create alert ");
         // send metric, receive alert
-        zmsg_t *msg = zm_proto_encode_metric (
+        zmsg_t *msg = zm_proto_encode_metric_v1 (
             "mydevice",
             time (NULL),
             60,
